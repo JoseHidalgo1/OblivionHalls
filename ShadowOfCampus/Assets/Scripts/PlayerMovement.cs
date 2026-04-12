@@ -14,6 +14,9 @@ public class PlayerMovement : MonoBehaviour
     [Header("Animación")]
     public Animator animator;
 
+    [Header("Visual")]
+    [SerializeField] private bool forceVisibleSpriteStyle = true;
+
     private Rigidbody2D rb;
     private Vector2 movementInput;
     private FacingDirection facingDirection = FacingDirection.Front;
@@ -43,6 +46,46 @@ public class PlayerMovement : MonoBehaviour
         rb = GetComponent<Rigidbody2D>();
         rb.freezeRotation = true;
         rb.gravityScale = 0f;
+
+        if (forceVisibleSpriteStyle)
+        {
+            EnsureVisibleSprites();
+        }
+    }
+
+    private void EnsureVisibleSprites()
+    {
+        SpriteRenderer[] spriteRenderers = GetComponentsInChildren<SpriteRenderer>(true);
+        if (spriteRenderers == null || spriteRenderers.Length == 0)
+        {
+            return;
+        }
+
+        Shader spriteDefaultShader = Shader.Find("Sprites/Default");
+
+        for (int index = 0; index < spriteRenderers.Length; index++)
+        {
+            SpriteRenderer spriteRenderer = spriteRenderers[index];
+            if (spriteRenderer == null)
+            {
+                continue;
+            }
+
+            spriteRenderer.color = Color.white;
+
+            if (spriteDefaultShader != null)
+            {
+                Material currentMaterial = spriteRenderer.sharedMaterial;
+                bool needsDefaultMaterial = currentMaterial == null
+                    || currentMaterial.shader == null
+                    || currentMaterial.shader.name != "Sprites/Default";
+
+                if (needsDefaultMaterial)
+                {
+                    spriteRenderer.material = new Material(spriteDefaultShader);
+                }
+            }
+        }
     }
 
     void Update()

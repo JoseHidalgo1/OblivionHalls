@@ -29,6 +29,12 @@ public class EnemyController : MonoBehaviour
     [Header("Animación")]
     [SerializeField] private Animator animator;
 
+    [Header("Render")]
+    [SerializeField] private bool forceSortingOverMap = true;
+    [SerializeField] private string enemySortingLayer = "Player";
+    [SerializeField] private int enemySortingOrder = 1;
+    [SerializeField] private bool forceVisibleSpriteStyle = true;
+
     private Rigidbody2D rb;
     private float lastAttackTime;
     private int currentHealth;
@@ -55,6 +61,16 @@ public class EnemyController : MonoBehaviour
 
     void Start()
     {
+        if (forceSortingOverMap)
+        {
+            ApplyEnemySorting();
+        }
+
+        if (forceVisibleSpriteStyle)
+        {
+            EnsureVisibleSprites();
+        }
+
         if (target == null)
         {
             GameObject playerObject = GameObject.FindGameObjectWithTag(playerTag);
@@ -67,6 +83,65 @@ public class EnemyController : MonoBehaviour
         targetHealth = GetPlayerHealth(target);
 
         PlayAnimation("EnemigoIdle");
+    }
+
+    void OnValidate()
+    {
+        if (forceSortingOverMap)
+        {
+            ApplyEnemySorting();
+        }
+
+        if (forceVisibleSpriteStyle)
+        {
+            EnsureVisibleSprites();
+        }
+    }
+
+    private void ApplyEnemySorting()
+    {
+        SpriteRenderer[] renderers = GetComponentsInChildren<SpriteRenderer>(true);
+        for (int index = 0; index < renderers.Length; index++)
+        {
+            SpriteRenderer rendererRef = renderers[index];
+            if (rendererRef == null)
+            {
+                continue;
+            }
+
+            rendererRef.sortingLayerName = enemySortingLayer;
+            rendererRef.sortingOrder = enemySortingOrder;
+        }
+    }
+
+    private void EnsureVisibleSprites()
+    {
+        SpriteRenderer[] renderers = GetComponentsInChildren<SpriteRenderer>(true);
+        Shader spriteDefaultShader = Shader.Find("Sprites/Default");
+
+        for (int index = 0; index < renderers.Length; index++)
+        {
+            SpriteRenderer rendererRef = renderers[index];
+            if (rendererRef == null)
+            {
+                continue;
+            }
+
+            rendererRef.color = Color.white;
+
+            if (spriteDefaultShader != null)
+            {
+                Material currentMaterial = rendererRef.sharedMaterial;
+                bool needsDefaultMaterial = currentMaterial == null
+                    || currentMaterial.shader == null
+                    || currentMaterial.shader.name != "Sprites/Default";
+
+                if (needsDefaultMaterial)
+                {
+                    rendererRef.material = new Material(spriteDefaultShader);
+                }
+            }
+        }
     }
 
     void Update()
