@@ -1,4 +1,5 @@
 using System.Collections;
+using System;
 using UnityEngine;
 
 public class PlayerHealth : MonoBehaviour
@@ -13,6 +14,10 @@ public class PlayerHealth : MonoBehaviour
     private bool isInvulnerable;
 
     private PlayerMovement playerMovement;
+
+    public event Action<int, int> OnHealthChanged;
+    public event Action<int, int> OnDamaged;
+    public event Action OnDied;
 
     public int CurrentHealth => currentHealth;
     public int MaxHealth => maxHealth;
@@ -34,6 +39,11 @@ public class PlayerHealth : MonoBehaviour
         currentHealth = maxHealth;
     }
 
+    void Start()
+    {
+        OnHealthChanged?.Invoke(currentHealth, maxHealth);
+    }
+
     public void ApplyDamage(int amount)
     {
         if (amount <= 0 || isDead || isInvulnerable)
@@ -48,10 +58,14 @@ public class PlayerHealth : MonoBehaviour
 
         if (currentHealth <= 0)
         {
+            OnDamaged?.Invoke(currentHealth, maxHealth);
             Debug.Log("[PlayerHealth] Vida agotada. Ejecutando muerte.");
             Die();
             return;
         }
+
+        OnHealthChanged?.Invoke(currentHealth, maxHealth);
+        OnDamaged?.Invoke(currentHealth, maxHealth);
 
         if (playerMovement != null)
         {
@@ -78,6 +92,7 @@ public class PlayerHealth : MonoBehaviour
         }
 
         currentHealth = Mathf.Min(maxHealth, currentHealth + amount);
+        OnHealthChanged?.Invoke(currentHealth, maxHealth);
     }
 
     public void Die()
@@ -89,6 +104,9 @@ public class PlayerHealth : MonoBehaviour
 
         isDead = true;
         currentHealth = 0;
+
+        OnHealthChanged?.Invoke(currentHealth, maxHealth);
+        OnDied?.Invoke();
 
         Debug.Log("[PlayerHealth] Jugador murió.");
 
@@ -106,6 +124,7 @@ public class PlayerHealth : MonoBehaviour
         }
 
         currentHealth = maxHealth;
+        OnHealthChanged?.Invoke(currentHealth, maxHealth);
     }
 
     private IEnumerator InvulnerabilityRoutine()

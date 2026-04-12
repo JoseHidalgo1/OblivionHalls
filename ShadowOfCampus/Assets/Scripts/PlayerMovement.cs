@@ -22,6 +22,10 @@ public class PlayerMovement : MonoBehaviour
     private bool isAttacking;
     private bool isHurt;
     private bool isDead;
+    private Coroutine hurtFallbackCoroutine;
+
+    [Header("Fallback de animación")]
+    [SerializeField] private float hurtFallbackDuration = 0.35f;
 
     public bool IsDead => isDead;
     public bool CanMove => !isDead && !isAttacking && !isHurt;
@@ -208,6 +212,27 @@ public class PlayerMovement : MonoBehaviour
         rb.linearVelocity = Vector2.zero;
         PlayDirectionalAnimation("Hurt");
         hurtLocked = true; // Bloquea hasta que termine la animación
+
+        // Fallback: si no llega el Animation Event FinHurt, se desbloquea solo
+        if (hurtFallbackCoroutine != null)
+        {
+            StopCoroutine(hurtFallbackCoroutine);
+        }
+        hurtFallbackCoroutine = StartCoroutine(HurtFallbackRoutine());
+    }
+
+    private System.Collections.IEnumerator HurtFallbackRoutine()
+    {
+        yield return new WaitForSeconds(hurtFallbackDuration);
+
+        if (!isDead && isHurt)
+        {
+            isHurt = false;
+            hurtLocked = false;
+            UpdateAnimation();
+        }
+
+        hurtFallbackCoroutine = null;
     }
 
 
@@ -261,6 +286,12 @@ public class PlayerMovement : MonoBehaviour
     // Llamar desde Animation Event al final del clip Hurt
     public void FinHurt()
     {
+        if (hurtFallbackCoroutine != null)
+        {
+            StopCoroutine(hurtFallbackCoroutine);
+            hurtFallbackCoroutine = null;
+        }
+
         isHurt = false;
         hurtLocked = false;
         UpdateAnimation();

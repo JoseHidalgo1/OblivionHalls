@@ -1,49 +1,70 @@
 using UnityEngine;
 
-/// <summary>
-/// Gestiona los datos del jugador y los 4 slots de inventario.
-/// Adjunta este componente al mismo GameObject que PlayerHealth.
-/// </summary>
 public class InventoryManager : MonoBehaviour
 {
     public static InventoryManager Instance { get; private set; }
 
-    [Header("Datos del Jugador")]
-    public string playerName = "Zyros";
-    public int age = 21;
-    public string occupation = "Estudiante";
+    [Header("Inventario")]
+    [SerializeField] private int slotCount = 10;
+    [SerializeField] private Item[] slots;
 
-    [Header("Inventario (4 slots)")]
-    public Item[] slots = new Item[4];
-
-    [Header("Item inicial (Bate Metálico)")]
+    [Header("Item inicial")]
     [SerializeField] private Item startingItem;
-
-    private PlayerHealth playerHealth;
-
-    public int CurrentHealth => playerHealth != null ? playerHealth.CurrentHealth : 0;
-    public int MaxHealth => playerHealth != null ? playerHealth.MaxHealth : 0;
 
     void Awake()
     {
-        // Singleton
         if (Instance != null && Instance != this)
         {
             Destroy(gameObject);
             return;
         }
+
         Instance = this;
 
-        playerHealth = GetComponent<PlayerHealth>();
-        if (playerHealth == null) playerHealth = GetComponentInParent<PlayerHealth>();
-        if (playerHealth == null) playerHealth = GetComponentInChildren<PlayerHealth>();
+        if (slotCount < 1)
+        {
+            slotCount = 10;
+        }
 
-        // Inicializar slots vacíos
-        if (slots == null || slots.Length != 4)
-            slots = new Item[4];
+        if (slots == null || slots.Length != slotCount)
+        {
+            Item[] newSlots = new Item[slotCount];
+            if (slots != null)
+            {
+                int copyLength = Mathf.Min(slots.Length, newSlots.Length);
+                for (int index = 0; index < copyLength; index++)
+                {
+                    newSlots[index] = slots[index];
+                }
+            }
+            slots = newSlots;
+        }
 
-        // Colocar el item inicial en el slot 0
-        if (startingItem != null)
+        if (startingItem != null && slots[0] == null)
+        {
             slots[0] = startingItem;
+        }
+    }
+
+    public int SlotCount => slots != null ? slots.Length : 0;
+
+    public Item GetItemAt(int index)
+    {
+        if (slots == null || index < 0 || index >= slots.Length)
+        {
+            return null;
+        }
+
+        return slots[index];
+    }
+
+    public void SetItemAt(int index, Item item)
+    {
+        if (slots == null || index < 0 || index >= slots.Length)
+        {
+            return;
+        }
+
+        slots[index] = item;
     }
 }
