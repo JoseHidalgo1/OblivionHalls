@@ -35,6 +35,15 @@ public class EnemyController : MonoBehaviour
     [SerializeField] private int enemySortingOrder = 1;
     [SerializeField] private bool forceVisibleSpriteStyle = true;
 
+    [Header("Loot")]
+    [SerializeField] private bool dropLootOnDeath = true;
+    [SerializeField, Range(0f, 1f)] private float lootDropChance = 0.6f;
+    [SerializeField] private Item medicinaItem;
+    [SerializeField] private Item pastillasItem;
+    [SerializeField] private float lootSpawnRadius = 0.25f;
+    [SerializeField] private string lootSortingLayer = "Background";
+    [SerializeField] private int lootSortingOrder = -1;
+
     private Rigidbody2D rb;
     private float lastAttackTime;
     private int currentHealth;
@@ -44,6 +53,7 @@ public class EnemyController : MonoBehaviour
     private bool isAttacking;
     private bool isHit;
     private bool isDead;
+    private bool lootDropped;
     private bool attackDamageApplied;
     private Vector2 facingDirection = Vector2.right;
 
@@ -416,6 +426,68 @@ public class EnemyController : MonoBehaviour
         }
 
         PlayAnimation("EnemigoDie");
+        TryDropLoot();
+    }
+
+    private void TryDropLoot()
+    {
+        if (!dropLootOnDeath || lootDropped)
+        {
+            return;
+        }
+
+        if (Random.value > lootDropChance)
+        {
+            return;
+        }
+
+        Item lootItem = PickLootItem();
+        if (lootItem == null)
+        {
+            return;
+        }
+
+        Vector2 randomOffset = Random.insideUnitCircle * Mathf.Max(0f, lootSpawnRadius);
+        Vector3 spawnPosition = transform.position + new Vector3(randomOffset.x, randomOffset.y, 0f);
+
+        GameObject dropped = new GameObject("Drop_" + lootItem.itemName);
+        dropped.transform.position = spawnPosition;
+
+        DroppedItemWorld droppedData = dropped.AddComponent<DroppedItemWorld>();
+        droppedData.SetItem(lootItem);
+
+        SpriteRenderer rendererRef = dropped.AddComponent<SpriteRenderer>();
+        rendererRef.sprite = lootItem.icon;
+        rendererRef.sortingLayerName = lootSortingLayer;
+        rendererRef.sortingOrder = lootSortingOrder;
+
+        CircleCollider2D circleCollider = dropped.AddComponent<CircleCollider2D>();
+        circleCollider.isTrigger = true;
+
+        lootDropped = true;
+    }
+
+    private Item PickLootItem()
+    {
+        bool hasMedicina = medicinaItem != null;
+        bool hasPastillas = pastillasItem != null;
+
+        if (!hasMedicina && !hasPastillas)
+        {
+            return null;
+        }
+
+        if (hasMedicina && !hasPastillas)
+        {
+            return medicinaItem;
+        }
+
+        if (!hasMedicina)
+        {
+            return pastillasItem;
+        }
+
+        return Random.value < 0.5f ? medicinaItem : pastillasItem;
     }
 
     private string currentAnimation;

@@ -12,6 +12,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ebf5497f5a3d59147b19bb46292b5f89, type: 3}
   m_Name: Mochila
   m_EditorClassIdentifier: Assembly-CSharp::Item
-  itemName: Inventario
+  itemName: Mochila
   icon: {fileID: -453102698065280052, guid: 88c76d12ad0301547a48f255699cec87, type: 3}
   description: Mochila con 10 slots de inventario.

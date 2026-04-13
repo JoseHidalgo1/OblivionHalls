@@ -67,4 +67,54 @@ public class InventoryManager : MonoBehaviour
 
         slots[index] = item;
     }
+
+    public bool AddItem(Item item)
+    {
+        if (item == null || slots == null)
+        {
+            return false;
+        }
+
+        for (int index = 0; index < slots.Length; index++)
+        {
+            if (slots[index] == null)
+            {
+                slots[index] = item;
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    public void ResizeSlots(int newSlotCount)
+    {
+        if (newSlotCount < 1)
+        {
+            newSlotCount = 1;
+        }
+
+        if (slots == null)
+        {
+            slots = new Item[newSlotCount];
+            slotCount = newSlotCount;
+            return;
+        }
+
+        if (slots.Length == newSlotCount)
+        {
+            slotCount = newSlotCount;
+            return;
+        }
+
+        Item[] resized = new Item[newSlotCount];
+        int copyLength = Mathf.Min(slots.Length, resized.Length);
+        for (int index = 0; index < copyLength; index++)
+        {
+            resized[index] = slots[index];
+        }
+
+        slots = resized;
+        slotCount = newSlotCount;
+    }
 }
