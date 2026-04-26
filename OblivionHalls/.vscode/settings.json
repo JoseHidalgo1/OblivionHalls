@@ -67,5 +67,5 @@
         "*.sln": "*.csproj",
         "*.slnx": "*.csproj"
     },
-    "dotnet.defaultSolution": "ShadowOfCampus.slnx"
+    "dotnet.defaultSolution": "OblivionHalls.slnx"
 }
