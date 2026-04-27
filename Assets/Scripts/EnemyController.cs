@@ -1,4 +1,5 @@
 using System.Collections;
+using TMPro;
 using UnityEngine;
 
 [RequireComponent(typeof(Rigidbody2D))]
@@ -40,6 +41,10 @@ public class EnemyController : MonoBehaviour
     [SerializeField, Range(0f, 1f)] private float lootDropChance = 0.6f;
     [SerializeField] private Item medicinaItem;
     [SerializeField] private Item pastillasItem;
+    [SerializeField] private bool isBossEnemy = false;
+    [SerializeField] private float levelCompleteDelay = 10f;
+    [SerializeField] private GameObject bossCountdownPrefab;
+    [SerializeField] private Vector3 bossCountdownOffset = new Vector3(0f, 1.2f, 0f);
     [SerializeField] private float lootSpawnRadius = 0.25f;
     [SerializeField] private string lootSortingLayer = "Background";
     [SerializeField] private int lootSortingOrder = -1;
@@ -425,9 +430,58 @@ public class EnemyController : MonoBehaviour
             enemyCollider.enabled = false;
         }
 
-        GameStats.Instance?.EnemyKilled();
+        if (isBossEnemy)
+        {
+            GameStats.GetOrCreate()?.RegisterBossDefeat();
+            StartCoroutine(DelayedLevelComplete());
+        }
+
+        GameStats.GetOrCreate()?.EnemyKilled();
         PlayAnimation("EnemigoDie");
         TryDropLoot();
+    }
+
+    private IEnumerator DelayedLevelComplete()
+    {
+        float remainingTime = Mathf.Max(0f, levelCompleteDelay);
+        GameObject counterObject = null;
+        TextMeshPro counterText = null;
+
+        if (bossCountdownPrefab != null)
+        {
+            counterObject = Instantiate(bossCountdownPrefab, transform.position + bossCountdownOffset, Quaternion.identity);
+            counterText = counterObject.GetComponent<TextMeshPro>();
+            if (counterText == null)
+            {
+                counterText = counterObject.GetComponentInChildren<TextMeshPro>();
+            }
+        }
+
+        while (remainingTime > 0f)
+        {
+            if (counterText != null)
+            {
+                int secondsLeft = Mathf.CeilToInt(remainingTime);
+                counterText.text = $"Nivel completado en {secondsLeft}s";
+            }
+            remainingTime -= Time.deltaTime;
+            yield return null;
+        }
+
+        if (counterText != null)
+        {
+            counterText.text = "Nivel completado!";
+        }
+
+        if (LevelCompleteUI.Instance != null)
+        {
+            LevelCompleteUI.Instance.ShowLevelComplete();
+        }
+
+        if (counterObject != null)
+        {
+            Destroy(counterObject, 2f);
+        }
     }
 
     private void TryDropLoot()

@@ -87,14 +87,15 @@ public class GameOverUI : MonoBehaviour
             gameOverPanel.SetActive(true);
         }
 
-        if (GameStats.Instance != null)
+        GameStats stats = GameStats.GetOrCreate();
+        if (stats != null)
         {
-            float duration = GameStats.Instance.GetGameDuration();
+            float duration = stats.GetGameDuration();
             int minutes = Mathf.FloorToInt(duration / 60f);
             int seconds = Mathf.FloorToInt(duration % 60f);
             durationText.text = $"Duración: {minutes:00}:{seconds:00}";
 
-            enemiesKilledText.text = $"Enemigos Asesinados: {GameStats.Instance.GetEnemiesKilled()}";
+            enemiesKilledText.text = $"Enemigos Asesinados: {stats.GetEnemiesKilled()}";
         }
 
         // Pause the game
@@ -104,19 +105,20 @@ public class GameOverUI : MonoBehaviour
     private void RestartGame()
     {
         Time.timeScale = 1f;
-        GameStats.Instance?.ResetStats();
+        GameStats.GetOrCreate()?.RegisterGeneralRestart();
         SceneManager.LoadScene(SceneManager.GetActiveScene().name);
     }
 
     private void GoToMainMenu()
     {
         Time.timeScale = 1f;
-        // Assuming main menu is scene 0 or named "MainMenu"
-        SceneManager.LoadScene(0);
+        GameStats.GetOrCreate()?.ResetStats(true);
+        SceneManager.LoadScene("MainMenu");
     }
 
     private void QuitGame()
     {
+        GameStats.GetOrCreate()?.ResetStats(true);
         Application.Quit();
     }
 }

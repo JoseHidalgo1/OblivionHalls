@@ -101,6 +101,7 @@ public class PlayerFoodEnergy : MonoBehaviour
         currentFood = Mathf.Min(maxFood, currentFood + amount);
         if (currentFood != previousFood)
         {
+            GameStats.GetOrCreate()?.RecordFoodRestore();
             foodParticleTimer = foodParticleDuration;
             NotifyFoodChanged(true);
         }

@@ -97,6 +97,7 @@ public class PlayerHealth : MonoBehaviour
         }
 
         currentHealth = Mathf.Min(maxHealth, currentHealth + amount);
+        GameStats.GetOrCreate()?.RecordHealthHeal();
         OnHealthChanged?.Invoke(currentHealth, maxHealth);
     }
 
