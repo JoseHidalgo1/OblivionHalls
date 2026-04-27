@@ -181,14 +181,14 @@ public class FoodEnergyHUD : MonoBehaviour
         if (useFixedPositions)
         {
             // Usar posiciones relativas al viewport para que escalen con la pantalla
-            foodRect.anchorMin = new Vector2(0.05f, 0.95f); // 5% desde izquierda, 5% desde arriba
-            foodRect.anchorMax = new Vector2(0.05f, 0.95f);
+            foodRect.anchorMin = new Vector2(0.07f, 0.95f); // 7% desde izquierda, 5% desde arriba
+            foodRect.anchorMax = new Vector2(0.07f, 0.95f);
             foodRect.pivot = new Vector2(0f, 1f);
             foodRect.sizeDelta = heartRect.sizeDelta;
             foodRect.anchoredPosition = Vector2.zero;
 
-            energyRect.anchorMin = new Vector2(0.08f, 0.95f); // 8% desde izquierda
-            energyRect.anchorMax = new Vector2(0.08f, 0.95f);
+            energyRect.anchorMin = new Vector2(0.11f, 0.95f); // 11% desde izquierda
+            energyRect.anchorMax = new Vector2(0.11f, 0.95f);
             energyRect.pivot = new Vector2(0f, 1f);
             energyRect.sizeDelta = heartRect.sizeDelta;
             energyRect.anchoredPosition = Vector2.zero;
@@ -208,7 +208,7 @@ public class FoodEnergyHUD : MonoBehaviour
             energyRect.anchorMax = heartRect.anchorMax;
             energyRect.pivot = heartRect.pivot;
             energyRect.sizeDelta = heartRect.sizeDelta;
-            energyRect.anchoredPosition = heartRect.anchoredPosition + new Vector2(heartWidth * 2f, 0f);
+            energyRect.anchoredPosition = heartRect.anchoredPosition + new Vector2(heartWidth * 2.2f, 0f);
         }
     }
 

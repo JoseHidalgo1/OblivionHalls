@@ -299,7 +299,10 @@ public class PlayerMovement : MonoBehaviour
     }
 
 
+    public event System.Action OnDeathAnimationFinished;
+
     private bool deathLocked = false; // Evita repetir Death
+    private bool deathAnimationFinished = false;
 
     public void Morir()
     {
@@ -343,6 +346,12 @@ public class PlayerMovement : MonoBehaviour
         // Congela en el último frame deshabilitando el Animator
         if (animator != null)
             animator.enabled = false;
+        if (!deathAnimationFinished)
+        {
+            deathAnimationFinished = true;
+            Debug.Log("Death animation finished via fallback, invoking OnDeathAnimationFinished");
+            OnDeathAnimationFinished?.Invoke();
+        }
     }
 
 
@@ -374,6 +383,12 @@ public class PlayerMovement : MonoBehaviour
         rb.linearVelocity = Vector2.zero;
         if (animator != null)
             animator.enabled = false;
+        if (!deathAnimationFinished)
+        {
+            deathAnimationFinished = true;
+            Debug.Log("Death animation finished via event, invoking OnDeathAnimationFinished");
+            OnDeathAnimationFinished?.Invoke();
+        }
     }
 
     private Vector2 GetFacingVector()

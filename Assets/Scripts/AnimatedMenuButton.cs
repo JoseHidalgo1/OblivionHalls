@@ -1,8 +1,10 @@
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.EventSystems;
+using UnityEngine.Events;
 
-public class AnimatedMenuButton : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, IPointerDownHandler, IPointerUpHandler
+ [RequireComponent(typeof(Image))]
+public class AnimatedMenuButton : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, IPointerDownHandler, IPointerUpHandler, IPointerClickHandler
 {
     [Header("Sprites")]
     public Sprite normalSprite;
@@ -13,11 +15,18 @@ public class AnimatedMenuButton : MonoBehaviour, IPointerEnterHandler, IPointerE
     [Header("Opcional: Imagen secundaria (puerta)")]
     public Image extraImage; // Para la puerta abierta/cerrada
 
+    [Header("Acción al hacer click")]
+    public UnityEvent onClick;
+
     private Image image;
 
     void Awake()
     {
         image = GetComponent<Image>();
+        if (image != null)
+        {
+            image.raycastTarget = true;
+        }
         if (image && normalSprite)
             image.sprite = normalSprite;
         if (extraImage && extraSprite)
@@ -50,5 +59,10 @@ public class AnimatedMenuButton : MonoBehaviour, IPointerEnterHandler, IPointerE
     {
         if (image && hoverSprite)
             image.sprite = hoverSprite;
+    }
+
+    public void OnPointerClick(PointerEventData eventData)
+    {
+        onClick.Invoke();
     }
 }

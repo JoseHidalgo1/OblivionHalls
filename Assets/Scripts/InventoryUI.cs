@@ -36,6 +36,7 @@ public class InventoryUI : MonoBehaviour
     [SerializeField] private float pickupRadius = 0.7f;
     [SerializeField] private string droppedItemSortingLayer = "Background";
     [SerializeField] private int droppedItemSortingOrder = -1;
+    [SerializeField] private float droppedItemScale = 0.5f;
 
     [Header("Hint de recogida")]
     [SerializeField] private bool showPickupHint = true;
@@ -52,6 +53,7 @@ public class InventoryUI : MonoBehaviour
     private bool usingCanvasGroupMode;
     private int contextSlotIndex = -1;
     private PlayerHealth cachedPlayerHealth;
+    private PlayerFoodEnergy cachedPlayerFoodEnergy;
     private GameObject pickupHintObject;
     private TextMesh pickupHintText;
     private bool isDraggingItem;
@@ -766,17 +768,28 @@ public class InventoryUI : MonoBehaviour
         }
 
         string normalizedName = (item.itemName ?? string.Empty).Trim().ToLowerInvariant();
+        Debug.Log($"Using item: {item.itemName}, normalized: {normalizedName}");
         bool isHealingItem = normalizedName == "medicina" || normalizedName == "pastillas";
-        if (!isHealingItem)
+        bool isFoodItem = normalizedName == "lata" || normalizedName == "lata";
+        Debug.Log($"isHealingItem: {isHealingItem}, isFoodItem: {isFoodItem}");
+        if (!isHealingItem && !isFoodItem)
         {
             HideContextMenu();
             return;
         }
 
         PlayerHealth health = GetPlayerHealth();
-        if (health != null)
+        PlayerFoodEnergy foodEnergy = GetPlayerFoodEnergy();
+        Debug.Log($"PlayerHealth found: {health != null}, PlayerFoodEnergy found: {foodEnergy != null}");
+        if (isHealingItem && health != null)
         {
             health.Heal(1);
+            Debug.Log("Healed 1 health");
+        }
+        else if (isFoodItem && foodEnergy != null)
+        {
+            foodEnergy.RestoreFood(2);
+            Debug.Log("Restored 2 food");
         }
 
         inv.SetItemAt(contextSlotIndex, null);
@@ -833,6 +846,7 @@ public class InventoryUI : MonoBehaviour
         sr.sprite = item.icon;
         sr.sortingLayerName = droppedItemSortingLayer;
         sr.sortingOrder = droppedItemSortingOrder;
+        dropped.transform.localScale = new Vector3(droppedItemScale, droppedItemScale, 1f);
 
         CircleCollider2D col = dropped.AddComponent<CircleCollider2D>();
         col.isTrigger = true;
@@ -1000,6 +1014,28 @@ public class InventoryUI : MonoBehaviour
         }
 
         return cachedPlayerHealth;
+    }
+
+    private PlayerFoodEnergy GetPlayerFoodEnergy()
+    {
+        if (cachedPlayerFoodEnergy != null)
+        {
+            return cachedPlayerFoodEnergy;
+        }
+
+        GameObject playerObject = GameObject.FindGameObjectWithTag("Player");
+        if (playerObject == null)
+        {
+            return null;
+        }
+
+        cachedPlayerFoodEnergy = playerObject.GetComponent<PlayerFoodEnergy>();
+        if (cachedPlayerFoodEnergy == null)
+        {
+            cachedPlayerFoodEnergy = playerObject.GetComponentInChildren<PlayerFoodEnergy>();
+        }
+
+        return cachedPlayerFoodEnergy;
     }
 
     private void TryCloseContextMenuOnOutsideClick(Vector2 mousePosition)

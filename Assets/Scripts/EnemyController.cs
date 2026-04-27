@@ -425,6 +425,7 @@ public class EnemyController : MonoBehaviour
             enemyCollider.enabled = false;
         }
 
+        GameStats.Instance?.EnemyKilled();
         PlayAnimation("EnemigoDie");
         TryDropLoot();
     }
@@ -452,6 +453,7 @@ public class EnemyController : MonoBehaviour
 
         GameObject dropped = new GameObject("Drop_" + lootItem.itemName);
         dropped.transform.position = spawnPosition;
+        dropped.transform.localScale = new Vector3(0.5f, 0.5f, 1f);
 
         DroppedItemWorld droppedData = dropped.AddComponent<DroppedItemWorld>();
         droppedData.SetItem(lootItem);

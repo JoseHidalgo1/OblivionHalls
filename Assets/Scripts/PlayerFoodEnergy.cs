@@ -90,6 +90,22 @@ public class PlayerFoodEnergy : MonoBehaviour
         return speed;
     }
 
+    public void RestoreFood(int amount)
+    {
+        if (amount <= 0)
+        {
+            return;
+        }
+
+        int previousFood = currentFood;
+        currentFood = Mathf.Min(maxFood, currentFood + amount);
+        if (currentFood != previousFood)
+        {
+            foodParticleTimer = foodParticleDuration;
+            NotifyFoodChanged(true);
+        }
+    }
+
     public void RegisterMovement(Vector2 movementInput, float actualSpeed, float deltaTime, bool shiftHeld)
     {
         bool isMoving = movementInput.sqrMagnitude > 0.0001f;

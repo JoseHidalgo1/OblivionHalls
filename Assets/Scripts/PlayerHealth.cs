@@ -36,6 +36,11 @@ public class PlayerHealth : MonoBehaviour
             playerMovement = GetComponentInChildren<PlayerMovement>();
         }
 
+        if (playerMovement != null)
+        {
+            playerMovement.OnDeathAnimationFinished += HandleDeathAnimationFinished;
+        }
+
         currentHealth = maxHealth;
     }
 
@@ -106,7 +111,6 @@ public class PlayerHealth : MonoBehaviour
         currentHealth = 0;
 
         OnHealthChanged?.Invoke(currentHealth, maxHealth);
-        OnDied?.Invoke();
 
         Debug.Log("[PlayerHealth] Jugador murió.");
 
@@ -116,15 +120,10 @@ public class PlayerHealth : MonoBehaviour
         }
     }
 
-    public void SetHealthToMax()
+    private void HandleDeathAnimationFinished()
     {
-        if (isDead)
-        {
-            return;
-        }
-
-        currentHealth = maxHealth;
-        OnHealthChanged?.Invoke(currentHealth, maxHealth);
+        Debug.Log("PlayerHealth: Invoking OnDied");
+        OnDied?.Invoke();
     }
 
     private IEnumerator InvulnerabilityRoutine()
