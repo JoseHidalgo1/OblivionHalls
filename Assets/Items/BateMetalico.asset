@@ -14,4 +14,4 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   itemName: "Bate Met\xE1lico"
   icon: {fileID: -2418184489951284434, guid: 95c54c4a6c9ecfb4ebc36a9ca10d2f8a, type: 3}
-  description: "Un bate met\xE1lico resistente. \xDAtil para defenderse en el campus."
+  description: "Un bate met\xE1lico resistente. \xDAtil para defenderse."

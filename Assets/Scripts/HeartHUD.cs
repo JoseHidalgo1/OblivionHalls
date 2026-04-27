@@ -17,6 +17,7 @@ public class HeartHUD : MonoBehaviour
 
     [Header("Posición fija en pantalla")]
     [SerializeField] private bool forceTopLeft = true;
+    [SerializeField] private bool useRelativePosition = false;
     [SerializeField] private Vector2 topLeftOffset = new Vector2(24f, -24f);
 
     private int currentFrameIndex;
@@ -37,12 +38,42 @@ public class HeartHUD : MonoBehaviour
         if (forceTopLeft && heartImage != null)
         {
             RectTransform rect = heartImage.rectTransform;
-            rect.anchorMin = new Vector2(0f, 1f);
-            rect.anchorMax = new Vector2(0f, 1f);
-            rect.pivot = new Vector2(0f, 1f);
-            rect.anchoredPosition = topLeftOffset;
+            if (useRelativePosition)
+            {
+                rect.anchorMin = new Vector2(0.02f, 0.95f);
+                rect.anchorMax = new Vector2(0.02f, 0.95f);
+                rect.pivot = new Vector2(0f, 1f);
+                rect.anchoredPosition = Vector2.zero;
+            }
+            else
+            {
+                rect.anchorMin = new Vector2(0f, 1f);
+                rect.anchorMax = new Vector2(0f, 1f);
+                rect.pivot = new Vector2(0f, 1f);
+                rect.anchoredPosition = topLeftOffset;
+            }
+        }
+
+        if (heartImage == null)
+        {
+            heartImage = CreateDefaultHeartImage();
         }
     }
+
+    private Image CreateDefaultHeartImage()
+    {
+        GameObject imageObj = new GameObject("HeartImage", typeof(RectTransform), typeof(Image));
+        imageObj.transform.SetParent(transform, false);
+        Image image = imageObj.GetComponent<Image>();
+        image.rectTransform.anchorMin = new Vector2(0f, 1f);
+        image.rectTransform.anchorMax = new Vector2(0f, 1f);
+        image.rectTransform.pivot = new Vector2(0f, 1f);
+        image.rectTransform.anchoredPosition = topLeftOffset;
+        image.color = Color.white;
+        return image;
+    }
+
+    public Image HeartImage => heartImage;
 
     void OnEnable()
     {

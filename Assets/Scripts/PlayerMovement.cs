@@ -21,6 +21,7 @@ public class PlayerMovement : MonoBehaviour
     private Vector2 movementInput;
     private FacingDirection facingDirection = FacingDirection.Front;
     private string currentAnimation;
+    private PlayerFoodEnergy foodEnergy;
 
     private bool isAttacking;
     private bool isHurt;
@@ -46,6 +47,8 @@ public class PlayerMovement : MonoBehaviour
         rb = GetComponent<Rigidbody2D>();
         rb.freezeRotation = true;
         rb.gravityScale = 0f;
+
+        foodEnergy = GetComponent<PlayerFoodEnergy>();
 
         if (forceVisibleSpriteStyle)
         {
@@ -122,7 +125,24 @@ public class PlayerMovement : MonoBehaviour
             return;
         }
 
-        rb.linearVelocity = movementInput * moveSpeed;
+        bool shiftHeld = false;
+        if (Keyboard.current != null)
+        {
+            shiftHeld = Keyboard.current.leftShiftKey.isPressed || Keyboard.current.rightShiftKey.isPressed;
+        }
+
+        float effectiveSpeed = moveSpeed;
+        if (foodEnergy != null)
+        {
+            effectiveSpeed = foodEnergy.GetEffectiveSpeed(moveSpeed, movementInput);
+        }
+
+        rb.linearVelocity = movementInput * effectiveSpeed;
+
+        if (foodEnergy != null)
+        {
+            foodEnergy.RegisterMovement(movementInput, effectiveSpeed, Time.fixedDeltaTime, shiftHeld);
+        }
     }
 
     private Vector2 GetMovementInput()
