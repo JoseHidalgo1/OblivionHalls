@@ -117,7 +117,7 @@ public class MenuController : MonoBehaviour
         Canvas canvas = GetComponentInParent<Canvas>();
         if (canvas == null)
         {
-            canvas = FindObjectOfType<Canvas>();
+            canvas = FindFirstObjectByType<Canvas>();
         }
         if (canvas != null && canvas.GetComponent<CanvasScaler>() == null)
         {

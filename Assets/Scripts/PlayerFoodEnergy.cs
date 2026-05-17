@@ -7,6 +7,8 @@ public class PlayerFoodEnergy : MonoBehaviour
     [SerializeField] private int maxFood = 10;
     [SerializeField] private float distancePerStep = 0.4f;
     [SerializeField] private int stepsPerFood = 10;
+    [SerializeField, Tooltip("Multiplicador de pasos necesarios para consumir 1 unidad de comida.")]
+    private int foodConsumptionMultiplier = 10000;
     [SerializeField] private float foodParticleDuration = 0.2f;
     [SerializeField] private float foodSlowdownAmount = 0.2f;
 
@@ -117,7 +119,7 @@ public class PlayerFoodEnergy : MonoBehaviour
             {
                 walkedDistance -= distancePerStep;
                 stepCounter++;
-                if (stepCounter >= stepsPerFood)
+                if (stepCounter >= stepsPerFood * Mathf.Max(1, foodConsumptionMultiplier))
                 {
                     stepCounter = 0;
                     ConsumeFood();

@@ -32,7 +32,7 @@ public class HeartHUD : MonoBehaviour
 
         if (playerHealth == null)
         {
-            playerHealth = FindObjectOfType<PlayerHealth>();
+            playerHealth = FindFirstObjectByType<PlayerHealth>();
         }
 
         if (forceTopLeft && heartImage != null)
@@ -103,7 +103,7 @@ public class HeartHUD : MonoBehaviour
     {
         if (playerHealth == null)
         {
-            playerHealth = FindObjectOfType<PlayerHealth>();
+            playerHealth = FindFirstObjectByType<PlayerHealth>();
         }
 
         if (playerHealth == null)

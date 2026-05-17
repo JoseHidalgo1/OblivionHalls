@@ -34,12 +34,12 @@ public class FoodEnergyHUD : MonoBehaviour
         {
             if (playerFoodEnergy == null)
             {
-                playerFoodEnergy = FindObjectOfType<PlayerFoodEnergy>();
+                playerFoodEnergy = FindFirstObjectByType<PlayerFoodEnergy>();
             }
 
             if (heartHUD == null)
             {
-                heartHUD = FindObjectOfType<HeartHUD>();
+                heartHUD = FindFirstObjectByType<HeartHUD>();
             }
 
             if (foodImage == null)
@@ -91,12 +91,12 @@ public class FoodEnergyHUD : MonoBehaviour
     {
         if (playerFoodEnergy == null)
         {
-            playerFoodEnergy = FindObjectOfType<PlayerFoodEnergy>();
+            playerFoodEnergy = FindFirstObjectByType<PlayerFoodEnergy>();
         }
 
         if (heartHUD == null)
         {
-            heartHUD = FindObjectOfType<HeartHUD>();
+            heartHUD = FindFirstObjectByType<HeartHUD>();
         }
 
         if (playerFoodEnergy == null)
@@ -216,7 +216,7 @@ public class FoodEnergyHUD : MonoBehaviour
     {
         if (heartHUD == null)
         {
-            heartHUD = FindObjectOfType<HeartHUD>();
+            heartHUD = FindFirstObjectByType<HeartHUD>();
         }
 
         if (foodImage == null)
