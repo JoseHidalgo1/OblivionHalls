@@ -7,7 +7,6 @@ public class PlayerMovement : MonoBehaviour
     public float moveSpeed = 5f;
 
     [Header("Ataque")]
-    public Key attackKey = Key.E;
     public int attackDamage = 1;
     public float attackRange = 1.1f;
 
@@ -50,9 +49,22 @@ public class PlayerMovement : MonoBehaviour
 
         foodEnergy = GetComponent<PlayerFoodEnergy>();
 
+        if (GetComponent<MapUIController>() == null)
+        {
+            gameObject.AddComponent<MapUIController>();
+        }
+
         if (forceVisibleSpriteStyle)
         {
             EnsureVisibleSprites();
+        }
+    }
+
+    private void OnValidate()
+    {
+        if (!Application.isPlaying && GetComponent<MapUIController>() == null)
+        {
+            gameObject.AddComponent<MapUIController>();
         }
     }
 
@@ -109,7 +121,7 @@ public class PlayerMovement : MonoBehaviour
             UpdateFacingDirection(movementInput);
         }
 
-        if (!isAttacking && !isHurt && Keyboard.current != null && Keyboard.current[attackKey].wasPressedThisFrame)
+        if (!isAttacking && !isHurt && Keyboard.current != null && Keyboard.current[KeyBindings.GetKey(GameAction.Attack)].wasPressedThisFrame)
         {
             IniciarAtaque();
         }
@@ -128,7 +140,11 @@ public class PlayerMovement : MonoBehaviour
         bool shiftHeld = false;
         if (Keyboard.current != null)
         {
-            shiftHeld = Keyboard.current.leftShiftKey.isPressed || Keyboard.current.rightShiftKey.isPressed;
+            Key sprintKey = KeyBindings.GetKey(GameAction.Sprint);
+            if (Keyboard.current[sprintKey] != null)
+            {
+                shiftHeld = Keyboard.current[sprintKey].isPressed;
+            }
         }
 
         float effectiveSpeed = moveSpeed;
@@ -152,10 +168,10 @@ public class PlayerMovement : MonoBehaviour
             return Vector2.zero;
         }
 
-        float horizontal = (Keyboard.current.dKey.isPressed || Keyboard.current.rightArrowKey.isPressed ? 1f : 0f)
-                           - (Keyboard.current.aKey.isPressed || Keyboard.current.leftArrowKey.isPressed ? 1f : 0f);
-        float vertical = (Keyboard.current.wKey.isPressed || Keyboard.current.upArrowKey.isPressed ? 1f : 0f)
-                         - (Keyboard.current.sKey.isPressed || Keyboard.current.downArrowKey.isPressed ? 1f : 0f);
+        float horizontal = (Keyboard.current[KeyBindings.GetKey(GameAction.MoveRight)]?.isPressed == true ? 1f : 0f)
+                   - (Keyboard.current[KeyBindings.GetKey(GameAction.MoveLeft)]?.isPressed == true ? 1f : 0f);
+        float vertical = (Keyboard.current[KeyBindings.GetKey(GameAction.MoveUp)]?.isPressed == true ? 1f : 0f)
+                 - (Keyboard.current[KeyBindings.GetKey(GameAction.MoveDown)]?.isPressed == true ? 1f : 0f);
 
         Vector2 input = new Vector2(horizontal, vertical);
         return input.normalized;

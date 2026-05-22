@@ -3,6 +3,7 @@ using UnityEngine.SceneManagement;
 using UnityEngine.Events;
 using UnityEngine.UI;
 
+[ExecuteAlways]
 public class MenuController : MonoBehaviour
 {
     [Header("Paneles")]
@@ -10,6 +11,7 @@ public class MenuController : MonoBehaviour
 
     [Header("Opciones automáticas")]
     public bool autoCreateControlsPanel = true;
+    public bool showControlsPanelInEditor = true;
     public string controlsPanelName = "ControlsPanel";
 
     [Header("Escena de juego")]
@@ -89,6 +91,11 @@ public class MenuController : MonoBehaviour
         if (controlsPanel != null)
         {
             controlsPanel.SetActive(true);
+            ControlsPanel panelScript = controlsPanel.GetComponent<ControlsPanel>();
+            if (panelScript != null)
+            {
+                panelScript.ShowControlsMenu(false);
+            }
         }
     }
 
@@ -96,7 +103,22 @@ public class MenuController : MonoBehaviour
     {
         if (controlsPanel != null)
         {
-            controlsPanel.SetActive(false);
+            if (Application.isPlaying)
+            {
+                ControlsPanel panelScript = controlsPanel.GetComponent<ControlsPanel>();
+                if (panelScript != null)
+                {
+                    panelScript.HidePanel();
+                }
+                else
+                {
+                    controlsPanel.SetActive(false);
+                }
+            }
+            else if (showControlsPanelInEditor)
+            {
+                controlsPanel.SetActive(true);
+            }
         }
     }
 
@@ -110,6 +132,11 @@ public class MenuController : MonoBehaviour
 
     void Awake()
     {
+        if (controlsPanel == null && autoCreateControlsPanel)
+        {
+            EnsureControlsPanel();
+        }
+
         SetupImageButton(playImageObject, PlayGame, playNormal, playHover, playPressed);
         SetupImageButton(controlsImageObject, ShowControls, controlsNormal, controlsHover, controlsPressed);
         SetupImageButton(quitImageObject, QuitGame, quitNormal, quitHover, quitPressed);
@@ -129,6 +156,26 @@ public class MenuController : MonoBehaviour
         if (controlsPanel != null)
         {
             controlsPanel.SetActive(false);
+        }
+    }
+
+    private void OnEnable()
+    {
+        if (controlsPanel == null && autoCreateControlsPanel)
+        {
+            EnsureControlsPanel();
+        }
+        else if (!Application.isPlaying && showControlsPanelInEditor)
+        {
+            controlsPanel.SetActive(true);
+        }
+    }
+
+    private void OnValidate()
+    {
+        if (controlsPanel == null && autoCreateControlsPanel)
+        {
+            EnsureControlsPanel();
         }
     }
 
@@ -196,11 +243,16 @@ public class MenuController : MonoBehaviour
 
         controlsPanel = panel;
 
-        CreateControlsTitle(panel.transform);
-        CreateControlsText(panel.transform);
-        CreateCloseButton(panel.transform);
+        panel.AddComponent<ControlsPanel>();
 
-        controlsPanel.SetActive(false);
+        if (Application.isPlaying)
+        {
+            controlsPanel.SetActive(false);
+        }
+        else if (showControlsPanelInEditor)
+        {
+            controlsPanel.SetActive(true);
+        }
     }
 
     private void CreateControlsTitle(Transform parent)

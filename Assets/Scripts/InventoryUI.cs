@@ -101,7 +101,7 @@ public class InventoryUI : MonoBehaviour
 
     void Update()
     {
-        if (Keyboard.current != null && Keyboard.current.tabKey.wasPressedThisFrame)
+        if (Keyboard.current != null && Keyboard.current[KeyBindings.GetKey(GameAction.Inventory)]?.wasPressedThisFrame == true)
         {
             ToggleInventory();
         }
@@ -118,7 +118,7 @@ public class InventoryUI : MonoBehaviour
             UpdateDragGhostPosition(Mouse.current.position.ReadValue());
         }
 
-        if (Keyboard.current != null && Keyboard.current.qKey.wasPressedThisFrame)
+        if (Keyboard.current != null && Keyboard.current[KeyBindings.GetKey(GameAction.Pickup)]?.wasPressedThisFrame == true)
         {
             TryPickupNearbyDroppedItem();
         }
@@ -934,7 +934,7 @@ public class InventoryUI : MonoBehaviour
 
         pickupHintObject = new GameObject("PickupHint");
         pickupHintText = pickupHintObject.AddComponent<TextMesh>();
-        pickupHintText.text = pickupHintMessage;
+        pickupHintText.text = string.Format("Presiona {0} para recoger", KeyBindings.GetKeyDisplayName(GameAction.Pickup));
         pickupHintText.characterSize = 0.08f;
         pickupHintText.fontSize = 64;
         pickupHintText.color = Color.white;
@@ -976,7 +976,7 @@ public class InventoryUI : MonoBehaviour
 
         if (pickupHintText != null)
         {
-            pickupHintText.text = pickupHintMessage;
+            pickupHintText.text = string.Format("Presiona {0} para recoger", KeyBindings.GetKeyDisplayName(GameAction.Pickup));
         }
 
         if (pickupHintObject != null)
