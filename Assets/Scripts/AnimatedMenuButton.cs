@@ -27,6 +27,10 @@ public class AnimatedMenuButton : MonoBehaviour, IPointerEnterHandler, IPointerE
         {
             image.raycastTarget = true;
         }
+        if (onClick == null)
+        {
+            onClick = new UnityEvent();
+        }
         if (image && normalSprite)
             image.sprite = normalSprite;
         if (extraImage && extraSprite)
@@ -63,6 +67,9 @@ public class AnimatedMenuButton : MonoBehaviour, IPointerEnterHandler, IPointerE
 
     public void OnPointerClick(PointerEventData eventData)
     {
-        onClick.Invoke();
+        if (onClick != null)
+        {
+            onClick.Invoke();
+        }
     }
 }

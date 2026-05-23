@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.SceneManagement;
+using UnityEngine.EventSystems;
 using UnityEngine.InputSystem;
 using UnityEngine.InputSystem.Controls;
 
@@ -27,6 +28,17 @@ public class ControlsPanel : MonoBehaviour
         {
             Debug.LogWarning("ControlsPanel: No Canvas found in the loaded scene. Please add a Canvas to GameScene or manually place the controls panel.");
             return;
+        }
+
+        if (canvas.GetComponent<GraphicRaycaster>() == null)
+        {
+            canvas.gameObject.AddComponent<GraphicRaycaster>();
+        }
+
+        if (UnityEngine.Object.FindFirstObjectByType<EventSystem>() == null)
+        {
+            GameObject eventSystemObject = new GameObject("EventSystem", typeof(EventSystem), typeof(StandaloneInputModule));
+            EventSystem.current = eventSystemObject.GetComponent<EventSystem>();
         }
 
         GameObject panel = new GameObject("ControlsPanel", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image));
@@ -130,12 +142,13 @@ public class ControlsPanel : MonoBehaviour
     private GameObject panelBody;
     private GameObject menuBody;
     private GameObject controlsMenuBody;
+    private GameObject audioMenuBody;
     private RectTransform contentRoot;
     private Text statusText;
     private bool isWaitingForKey;
     private GameAction actionBeingRebound;
     private bool panelVisible;
-    private bool controlsMenuVisible;
+    private bool audioMenuVisible;
     private bool isPauseMode;
 
     private readonly GameAction[] displayedActions = new[]
@@ -205,9 +218,15 @@ public class ControlsPanel : MonoBehaviour
 
     void Update()
     {
-        if (Application.isPlaying && Keyboard.current != null && IsPauseAllowed())
+        if (Application.isPlaying && IsPauseAllowed())
         {
-            if (Keyboard.current[KeyBindings.GetKey(GameAction.Pause)]?.wasPressedThisFrame == true)
+            bool pausePressed = Input.GetKeyDown(KeyCode.Escape);
+            if (Keyboard.current != null)
+            {
+                pausePressed |= Keyboard.current[KeyBindings.GetKey(GameAction.Pause)]?.wasPressedThisFrame == true;
+            }
+
+            if (pausePressed)
             {
                 if (!isWaitingForKey)
                 {
@@ -227,15 +246,33 @@ public class ControlsPanel : MonoBehaviour
         if (contentRoot != null)
             return;
 
+        Transform existingBody = transform.Find("PanelBody");
+        if (existingBody != null)
+        {
+            panelBody = existingBody.gameObject;
+            menuBody = panelBody.transform.Find("PauseMenuBody")?.gameObject;
+            controlsMenuBody = panelBody.transform.Find("ControlsMenuBody")?.gameObject;
+            audioMenuBody = panelBody.transform.Find("AudioMenuBody")?.gameObject;
+            Transform scrollView = panelBody.transform.Find("BindingsScrollView");
+            if (scrollView != null)
+            {
+                ScrollRect scrollRect = scrollView.GetComponent<ScrollRect>();
+                if (scrollRect != null)
+                    contentRoot = scrollRect.content;
+            }
+            InitializeExistingPanelUI();
+            return;
+        }
+
         if (panelBody == null)
         {
-            Transform existingBody = transform.Find("PanelBody");
-            if (existingBody != null)
+            Transform existingPanelBody = transform.Find("PanelBody");
+            if (existingPanelBody != null)
             {
                 if (Application.isPlaying)
-                    Destroy(existingBody.gameObject);
+                    Destroy(existingPanelBody.gameObject);
                 else
-                    DestroyImmediate(existingBody.gameObject);
+                    DestroyImmediate(existingPanelBody.gameObject);
             }
         }
 
@@ -255,12 +292,13 @@ public class ControlsPanel : MonoBehaviour
         menuRect.offsetMin = Vector2.zero;
         menuRect.offsetMax = Vector2.zero;
 
-        GameObject titleObj = CreateTextObject("PauseTitle", "PAUSA", 22, TextAnchor.UpperCenter, menuRect, new Vector2(0.1f, 0.75f), new Vector2(0.9f, 0.92f));
+        GameObject titleObj = CreateTextObject("PauseTitle", "PAUSA", 22, TextAnchor.UpperCenter, menuRect, new Vector2(0.1f, 0.65f), new Vector2(0.9f, 0.82f));
         titleObj.GetComponent<Text>().fontStyle = FontStyle.Bold;
 
         CreateMenuButton(menuRect, "ContinueButton", "Continuar", new Vector2(0.3f, 0.55f), new Vector2(0.7f, 0.65f), HidePanel);
         CreateMenuButton(menuRect, "ControlsButton", "Controles", new Vector2(0.3f, 0.4f), new Vector2(0.7f, 0.5f), () => ShowControlsMenu(true));
-        CreateMenuButton(menuRect, "QuitButton", "Salir", new Vector2(0.3f, 0.25f), new Vector2(0.7f, 0.35f), QuitGame);
+        CreateMenuButton(menuRect, "AudioButton", "Sonido", new Vector2(0.3f, 0.28f), new Vector2(0.7f, 0.38f), () => ShowAudioSettings(true));
+        CreateMenuButton(menuRect, "QuitButton", "Salir", new Vector2(0.3f, 0.15f), new Vector2(0.7f, 0.25f), QuitGame);
 
         controlsMenuBody = new GameObject("ControlsMenuBody", typeof(RectTransform));
         controlsMenuBody.transform.SetParent(bodyRect, false);
@@ -284,6 +322,242 @@ public class ControlsPanel : MonoBehaviour
         contentRoot = CreateScrollView("BindingsScrollView", new Vector2(0.05f, 0.16f), new Vector2(0.95f, 0.66f), controlsRect);
         CreateMenuButton(controlsRect, "BackButton", "Volver", new Vector2(0.35f, 0.02f), new Vector2(0.65f, 0.1f), BackFromControls);
         controlsMenuBody.SetActive(false);
+
+        // Audio Settings Panel
+        audioMenuBody = new GameObject("AudioMenuBody", typeof(RectTransform));
+        audioMenuBody.transform.SetParent(bodyRect, false);
+        RectTransform audioRect = audioMenuBody.GetComponent<RectTransform>();
+        audioRect.anchorMin = Vector2.zero;
+        audioRect.anchorMax = Vector2.one;
+        audioRect.offsetMin = Vector2.zero;
+        audioRect.offsetMax = Vector2.zero;
+
+        GameObject audioTitleObj = CreateTextObject("AudioTitle", "Sonido", 20, TextAnchor.UpperCenter, audioRect, new Vector2(0.1f, 0.85f), new Vector2(0.9f, 0.95f));
+        audioTitleObj.GetComponent<Text>().fontStyle = FontStyle.Bold;
+
+        CreateAudioVolumeSliders(audioRect);
+        CreateMenuButton(audioRect, "AudioBackButton", "Volver", new Vector2(0.35f, 0.02f), new Vector2(0.65f, 0.1f), BackFromAudioSettings);
+        audioMenuBody.SetActive(false);
+    }
+
+    private void CreateAudioVolumeSliders(RectTransform parent)
+    {
+        AudioManager audioManager = Application.isPlaying ? AudioManager.GetOrCreate() : null;
+        string[] trackNames = { "MainMenu", "Exploration", "Boss", "Win", "Death" };
+        string[] trackLabels = { "Menú Principal", "Exploración", "Boss", "Victoria", "Muerte" };
+        float[] defaultVolumes = { 1f, 1f, 0.8f, 1f, 0.9f };
+
+        RectTransform audioContent = CreateScrollView("AudioScrollView", new Vector2(0.05f, 0.12f), new Vector2(0.95f, 0.78f), parent);
+
+        float rowHeight = 100f;
+        float spacing = 12f;
+        float contentHeight = trackNames.Length * (rowHeight + spacing);
+        audioContent.sizeDelta = new Vector2(0f, contentHeight);
+
+        for (int i = 0; i < trackNames.Length; i++)
+        {
+            string trackName = trackNames[i];
+            string trackLabel = trackLabels[i];
+            float volumeValue = audioManager != null ? audioManager.GetTrackVolume(trackName) : defaultVolumes[i];
+            float yPos = -(i * (rowHeight + spacing));
+
+            GameObject row = new GameObject(trackName + "Row", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image));
+            row.transform.SetParent(audioContent, false);
+            Image rowImage = row.GetComponent<Image>();
+            rowImage.color = new Color(0.08f, 0.08f, 0.08f, 0.9f);
+            RectTransform rowRect = row.GetComponent<RectTransform>();
+            rowRect.anchorMin = new Vector2(0f, 1f);
+            rowRect.anchorMax = new Vector2(1f, 1f);
+            rowRect.pivot = new Vector2(0.5f, 1f);
+            rowRect.sizeDelta = new Vector2(0f, rowHeight);
+            rowRect.anchoredPosition = new Vector2(0f, yPos);
+
+            GameObject labelObj = CreateTextObject(trackName + "Label", trackLabel, 18, TextAnchor.UpperLeft, rowRect, new Vector2(0.05f, 0.6f), new Vector2(0.5f, 0.95f));
+            Text labelText = labelObj.GetComponent<Text>();
+            labelText.color = Color.white;
+            labelText.fontStyle = FontStyle.Bold;
+            labelText.horizontalOverflow = HorizontalWrapMode.Overflow;
+
+            GameObject valueObj = CreateTextObject(trackName + "Value", Mathf.RoundToInt(volumeValue * 100).ToString(), 16, TextAnchor.MiddleCenter, rowRect, new Vector2(0.76f, 0.25f), new Vector2(0.95f, 0.55f));
+            Text valueText = valueObj.GetComponent<Text>();
+            valueText.color = Color.white;
+            valueText.fontStyle = FontStyle.Bold;
+
+            GameObject sliderObj = new GameObject(trackName + "Slider", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image), typeof(Slider));
+            sliderObj.transform.SetParent(rowRect, false);
+            Image sliderImage = sliderObj.GetComponent<Image>();
+            sliderImage.color = new Color(0.2f, 0.2f, 0.2f, 1f);
+            RectTransform sliderRect = sliderObj.GetComponent<RectTransform>();
+            sliderRect.anchorMin = new Vector2(0.05f, 0.1f);
+            sliderRect.anchorMax = new Vector2(0.75f, 0.45f);
+            sliderRect.offsetMin = Vector2.zero;
+            sliderRect.offsetMax = Vector2.zero;
+
+            Slider slider = sliderObj.GetComponent<Slider>();
+            slider.minValue = 0f;
+            slider.maxValue = 1f;
+            slider.value = volumeValue;
+            slider.targetGraphic = sliderImage;
+            slider.direction = Slider.Direction.LeftToRight;
+            slider.transition = Selectable.Transition.ColorTint;
+            slider.colors = ColorBlock.defaultColorBlock;
+
+            GameObject fillArea = new GameObject("FillArea", typeof(RectTransform));
+            fillArea.transform.SetParent(sliderObj.transform, false);
+            RectTransform fillAreaRect = fillArea.GetComponent<RectTransform>();
+            fillAreaRect.anchorMin = new Vector2(0f, 0.2f);
+            fillAreaRect.anchorMax = new Vector2(1f, 0.8f);
+            fillAreaRect.offsetMin = Vector2.zero;
+            fillAreaRect.offsetMax = Vector2.zero;
+
+            GameObject fill = new GameObject("Fill", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image));
+            fill.transform.SetParent(fillArea.transform, false);
+            Image fillImage = fill.GetComponent<Image>();
+            fillImage.color = new Color(0.3f, 0.6f, 0.8f, 1f);
+            RectTransform fillRect = fill.GetComponent<RectTransform>();
+            fillRect.anchorMin = Vector2.zero;
+            fillRect.anchorMax = Vector2.one;
+            fillRect.offsetMin = Vector2.zero;
+            fillRect.offsetMax = Vector2.zero;
+            slider.fillRect = fillRect;
+
+            GameObject handle = new GameObject("Handle", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image));
+            handle.transform.SetParent(sliderObj.transform, false);
+            Image handleImage = handle.GetComponent<Image>();
+            handleImage.color = new Color(1f, 1f, 1f, 1f);
+            RectTransform handleRect = handle.GetComponent<RectTransform>();
+            handleRect.sizeDelta = new Vector2(20f, 40f);
+            handleRect.anchorMin = new Vector2(0f, 0.5f);
+            handleRect.anchorMax = new Vector2(0f, 0.5f);
+            handleRect.anchoredPosition = Vector2.zero;
+            slider.handleRect = handleRect;
+            slider.transition = Selectable.Transition.ColorTint;
+
+            if (audioManager != null)
+            {
+                string currentTrackName = trackName;
+                Text currentValueText = valueText;
+                slider.onValueChanged.AddListener(value =>
+                {
+                    audioManager.SetTrackVolume(currentTrackName, value);
+                    currentValueText.text = Mathf.RoundToInt(value * 100).ToString();
+                });
+            }
+        }
+    }
+
+    private void InitializeExistingPanelUI()
+    {
+        InitializeExistingButtons(menuBody);
+        InitializeExistingButtons(controlsMenuBody);
+        InitializeExistingButtons(audioMenuBody);
+        InitializeExistingAudioSliders(audioMenuBody);
+    }
+
+    private void InitializeExistingButtons(GameObject root)
+    {
+        if (root == null)
+            return;
+
+        foreach (Button button in root.GetComponentsInChildren<Button>(true))
+        {
+            if (button == null)
+                continue;
+
+            button.onClick.RemoveAllListeners();
+            button.targetGraphic = button.targetGraphic ?? button.GetComponent<Image>();
+            button.transition = Selectable.Transition.ColorTint;
+
+            switch (button.gameObject.name)
+            {
+                case "ContinueButton":
+                    button.onClick.AddListener(HidePanel);
+                    break;
+                case "ControlsButton":
+                    button.onClick.AddListener(() => ShowControlsMenu(true));
+                    break;
+                case "AudioButton":
+                    button.onClick.AddListener(() => ShowAudioSettings(true));
+                    break;
+                case "QuitButton":
+                    button.onClick.AddListener(QuitGame);
+                    break;
+                case "BackButton":
+                    button.onClick.AddListener(BackFromControls);
+                    break;
+                case "AudioBackButton":
+                    button.onClick.AddListener(BackFromAudioSettings);
+                    break;
+                case "CloseButton":
+                    button.onClick.AddListener(HidePanel);
+                    break;
+            }
+        }
+    }
+
+    private void InitializeExistingAudioSliders(GameObject root)
+    {
+        if (root == null)
+            return;
+
+        AudioManager audioManager = AudioManager.GetOrCreate();
+        if (audioManager == null)
+            return;
+
+        string[] trackNames = { "MainMenu", "Exploration", "Boss", "Win", "Death" };
+        foreach (string trackName in trackNames)
+        {
+            Slider slider = null;
+            foreach (Slider candidate in root.GetComponentsInChildren<Slider>(true))
+            {
+                if (candidate != null && candidate.gameObject.name == trackName + "Slider")
+                {
+                    slider = candidate;
+                    break;
+                }
+            }
+
+            if (slider == null)
+                continue;
+
+            Text valueText = slider.transform.parent.Find(trackName + "Value")?.GetComponent<Text>();
+            if (slider == null || valueText == null)
+                continue;
+
+            float volumeValue = audioManager.GetTrackVolume(trackName);
+            slider.value = volumeValue;
+            valueText.text = Mathf.RoundToInt(volumeValue * 100).ToString();
+            InitializeAudioSlider(slider, valueText, trackName, audioManager);
+        }
+    }
+
+    private void InitializeAudioSlider(Slider slider, Text valueText, string trackName, AudioManager audioManager)
+    {
+        if (slider == null || valueText == null || audioManager == null)
+            return;
+
+        slider.onValueChanged.RemoveAllListeners();
+        slider.onValueChanged.AddListener(value =>
+        {
+            audioManager.SetTrackVolume(trackName, value);
+            valueText.text = Mathf.RoundToInt(value * 100).ToString();
+        });
+    }
+
+    private void UpdateAudioSlider(string trackName, RectTransform sliderBgRect, RectTransform sliderFillRect, Text volumeText, AudioManager audioManager)
+    {
+        // Get mouse position relative to slider
+        if (RectTransformUtility.ScreenPointToLocalPointInRectangle(sliderBgRect, Input.mousePosition, null, out Vector2 localPoint))
+        {
+            float sliderWidth = sliderBgRect.rect.width;
+            float normalizedValue = Mathf.Clamp01(localPoint.x / sliderWidth);
+            
+            audioManager.SetTrackVolume(trackName, normalizedValue);
+            
+            // Update UI
+            sliderFillRect.anchorMax = new Vector2(normalizedValue, 1f);
+            volumeText.text = (Mathf.Round(normalizedValue * 100)).ToString();
+        }
     }
 
     private bool IsPauseAllowed()
@@ -398,18 +672,28 @@ public class ControlsPanel : MonoBehaviour
     public void ShowControlsMenu(bool pauseMode)
     {
         panelVisible = true;
-        controlsMenuVisible = true;
+        audioMenuVisible = false;
         isPauseMode = pauseMode;
-        SetMenuState(true);
+        SetMenuState(showControls: true, showAudio: false);
         SetPanelVisibility(true);
         SetPauseState(pauseMode);
         RefreshBindingsUI();
     }
 
+    public void ShowAudioSettings(bool pauseMode)
+    {
+        panelVisible = true;
+        audioMenuVisible = true;
+        isPauseMode = pauseMode;
+        SetMenuState(showControls: false, showAudio: true);
+        SetPanelVisibility(true);
+        SetPauseState(pauseMode);
+    }
+
     public void HidePanel()
     {
         panelVisible = false;
-        controlsMenuVisible = false;
+        audioMenuVisible = false;
         SetPanelVisibility(false);
         SetPauseState(false);
         isPauseMode = false;
@@ -449,9 +733,33 @@ public class ControlsPanel : MonoBehaviour
     private void SetMenuState(bool showControls)
     {
         if (menuBody != null)
-            menuBody.SetActive(!showControls);
+            menuBody.SetActive(!showControls && !audioMenuVisible);
         if (controlsMenuBody != null)
             controlsMenuBody.SetActive(showControls);
+        if (audioMenuBody != null)
+            audioMenuBody.SetActive(audioMenuVisible);
+    }
+
+    private void SetMenuState(bool showControls, bool showAudio)
+    {
+        if (menuBody != null)
+            menuBody.SetActive(!showControls && !showAudio);
+        if (controlsMenuBody != null)
+            controlsMenuBody.SetActive(showControls);
+        if (audioMenuBody != null)
+            audioMenuBody.SetActive(showAudio);
+    }
+
+    private void BackFromAudioSettings()
+    {
+        if (isPauseMode)
+        {
+            ShowPanel();
+        }
+        else
+        {
+            HidePanel();
+        }
     }
 
     private void SetPanelVisibility(bool visible)
@@ -606,6 +914,7 @@ public class ControlsPanel : MonoBehaviour
         contentRect.sizeDelta = Vector2.zero;
 
         scrollRect.content = contentRect;
+        scrollRect.viewport = viewportRect;
         return contentRect;
     }
 

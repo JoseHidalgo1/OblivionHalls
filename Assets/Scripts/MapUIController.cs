@@ -123,7 +123,7 @@ public class MapUIController : MonoBehaviour
         {
             if (mapTilemaps == null || mapTilemaps.Length == 0)
             {
-                mapTilemaps = FindObjectsOfType<Tilemap>();
+                mapTilemaps = UnityEngine.Object.FindObjectsByType<Tilemap>(FindObjectsInactive.Include, FindObjectsSortMode.None);
             }
             ComputeMapBounds();
         }
@@ -154,20 +154,14 @@ public class MapUIController : MonoBehaviour
 
     private void OnEnable()
     {
-        if (!Application.isPlaying)
-        {
-            SetupMapCamera();
-            SetupUI();
-        }
+        // Avoid creating runtime UI or cameras during editor validation.
+        // Actual runtime setup occurs in Awake()/Start().
     }
 
     private void OnValidate()
     {
-        if (!Application.isPlaying)
-        {
-            SetupMapCamera();
-            SetupUI();
-        }
+        // Avoid creating runtime UI or cameras during editor validation.
+        // Editor-time validation should not instantiate scene objects.
     }
 
     private void Update()

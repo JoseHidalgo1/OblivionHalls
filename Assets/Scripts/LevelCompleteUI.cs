@@ -94,6 +94,13 @@ public class LevelCompleteUI : MonoBehaviour
             levelCompletePanel.SetActive(true);
         }
 
+        // Play win music
+        GameMusicManager musicManager = GameMusicManager.Instance;
+        if (musicManager != null)
+        {
+            musicManager.PlayWinMusic();
+        }
+
         GameStats stats = GameStats.GetOrCreate();
         if (stats != null)
         {

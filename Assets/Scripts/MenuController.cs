@@ -2,6 +2,7 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.Events;
 using UnityEngine.UI;
+using UnityEngine.EventSystems;
 
 [ExecuteAlways]
 public class MenuController : MonoBehaviour
@@ -21,6 +22,7 @@ public class MenuController : MonoBehaviour
     public GameObject playImageObject;
     public GameObject controlsImageObject;
     public GameObject quitImageObject;
+    public GameObject audioSettingsImageObject;
 
     [Header("Sprites opcionales")]
     public Sprite playNormal;
@@ -32,6 +34,9 @@ public class MenuController : MonoBehaviour
     public Sprite quitNormal;
     public Sprite quitHover;
     public Sprite quitPressed;
+    public Sprite audioNormal;
+    public Sprite audioHover;
+    public Sprite audioPressed;
 
     public void PlayGame()
     {
@@ -122,6 +127,23 @@ public class MenuController : MonoBehaviour
         }
     }
 
+    public void ShowAudioSettings()
+    {
+        if (controlsPanel == null && autoCreateControlsPanel)
+        {
+            EnsureControlsPanel();
+        }
+        if (controlsPanel != null)
+        {
+            controlsPanel.SetActive(true);
+            ControlsPanel panelScript = controlsPanel.GetComponent<ControlsPanel>();
+            if (panelScript != null)
+            {
+                panelScript.ShowAudioSettings(false);
+            }
+        }
+    }
+
     public void QuitGame()
     {
         Application.Quit();
@@ -137,15 +159,25 @@ public class MenuController : MonoBehaviour
             EnsureControlsPanel();
         }
 
-        SetupImageButton(playImageObject, PlayGame, playNormal, playHover, playPressed);
-        SetupImageButton(controlsImageObject, ShowControls, controlsNormal, controlsHover, controlsPressed);
-        SetupImageButton(quitImageObject, QuitGame, quitNormal, quitHover, quitPressed);
-
         Canvas canvas = GetComponentInParent<Canvas>();
         if (canvas == null)
         {
             canvas = FindFirstObjectByType<Canvas>();
         }
+        if (canvas != null && audioSettingsImageObject == null)
+        {
+            GameObject existingAudioButton = FindRecursiveAudioButton(canvas.transform, "AudioSettingsButton");
+            if (existingAudioButton != null)
+            {
+                audioSettingsImageObject = existingAudioButton;
+            }
+        }
+        EnsureAudioSettingsButton(canvas);
+
+        SetupImageButton(playImageObject, PlayGame, playNormal, playHover, playPressed);
+        SetupImageButton(controlsImageObject, ShowControls, controlsNormal, controlsHover, controlsPressed);
+        SetupImageButton(quitImageObject, QuitGame, quitNormal, quitHover, quitPressed);
+        SetupImageButton(audioSettingsImageObject, ShowAudioSettings, audioNormal, audioHover, audioPressed);
         if (canvas != null && canvas.GetComponent<CanvasScaler>() == null)
         {
             CanvasScaler scaler = canvas.gameObject.AddComponent<CanvasScaler>();
@@ -155,7 +187,33 @@ public class MenuController : MonoBehaviour
 
         if (controlsPanel != null)
         {
-            controlsPanel.SetActive(false);
+            ControlsPanel panelScript = controlsPanel.GetComponent<ControlsPanel>();
+            if (panelScript != null)
+            {
+                panelScript.HidePanel();
+            }
+            else
+            {
+                controlsPanel.SetActive(false);
+            }
+        }
+
+        // Ensure AudioManager and EventSystem are set up at runtime only
+        if (Application.isPlaying)
+        {
+            AudioManager.GetOrCreate();
+        }
+        if (FindFirstObjectByType<EventSystem>() == null)
+        {
+            GameObject eventSystemObject = new GameObject("EventSystem", typeof(EventSystem), typeof(StandaloneInputModule));
+            EventSystem.current = eventSystemObject.GetComponent<EventSystem>();
+        }
+
+        // Play main menu music
+        AudioManager audioManager = AudioManager.Instance;
+        if (audioManager != null)
+        {
+            audioManager.PlayTrack("MainMenu");
         }
     }
 
@@ -210,6 +268,57 @@ public class MenuController : MonoBehaviour
         animatedButton.onClick.AddListener(action);
     }
 
+    private void EnsureAudioSettingsButton(Canvas canvas)
+    {
+        if (audioSettingsImageObject != null)
+            return;
+
+        if (canvas == null)
+            return;
+
+        GameObject buttonObj = new GameObject("AudioSettingsButton", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image), typeof(AnimatedMenuButton));
+        buttonObj.transform.SetParent(canvas.transform, false);
+        audioSettingsImageObject = buttonObj;
+
+        RectTransform rect = buttonObj.GetComponent<RectTransform>();
+        rect.anchorMin = new Vector2(0.8f, 0.8f);
+        rect.anchorMax = new Vector2(0.95f, 0.95f);
+        rect.offsetMin = Vector2.zero;
+        rect.offsetMax = Vector2.zero;
+
+        Image image = buttonObj.GetComponent<Image>();
+        image.color = new Color(0.2f, 0.2f, 0.24f, 0.9f);
+
+        GameObject textObj = new GameObject("AudioSettingsText", typeof(RectTransform), typeof(CanvasRenderer), typeof(Text));
+        textObj.transform.SetParent(buttonObj.transform, false);
+        Text text = textObj.GetComponent<Text>();
+        text.text = "Sonido";
+        text.alignment = TextAnchor.MiddleCenter;
+        text.fontSize = 14;
+        text.color = Color.white;
+        text.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+        text.raycastTarget = false;
+
+        RectTransform textRect = textObj.GetComponent<RectTransform>();
+        textRect.anchorMin = Vector2.zero;
+        textRect.anchorMax = Vector2.one;
+        textRect.offsetMin = Vector2.zero;
+        textRect.offsetMax = Vector2.zero;
+    }
+
+    private GameObject FindRecursiveAudioButton(Transform parent, string name)
+    {
+        foreach (Transform child in parent)
+        {
+            if (child.name == name)
+                return child.gameObject;
+            GameObject found = FindRecursiveAudioButton(child, name);
+            if (found != null)
+                return found;
+        }
+        return null;
+    }
+
     private void EnsureControlsPanel()
     {
         if (controlsPanel != null)
@@ -247,7 +356,15 @@ public class MenuController : MonoBehaviour
 
         if (Application.isPlaying)
         {
-            controlsPanel.SetActive(false);
+            ControlsPanel panelScript = controlsPanel.GetComponent<ControlsPanel>();
+            if (panelScript != null)
+            {
+                panelScript.HidePanel();
+            }
+            else
+            {
+                controlsPanel.SetActive(false);
+            }
         }
         else if (showControlsPanelInEditor)
         {

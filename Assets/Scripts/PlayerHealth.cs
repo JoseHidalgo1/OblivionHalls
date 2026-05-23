@@ -115,6 +115,13 @@ public class PlayerHealth : MonoBehaviour
 
         Debug.Log("[PlayerHealth] Jugador murió.");
 
+        // Play death music
+        GameMusicManager musicManager = GameMusicManager.Instance;
+        if (musicManager != null)
+        {
+            musicManager.PlayDeathMusic();
+        }
+
         if (playerMovement != null)
         {
             playerMovement.Morir();
