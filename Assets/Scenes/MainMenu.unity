@@ -1554,70 +1554,6 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 303460942}
   m_CullTransparentMesh: 1
---- !u!1 &316903839
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 316903841}
-  - component: {fileID: 316903840}
-  m_Layer: 0
-  m_Name: AudioManager
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!114 &316903840
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 316903839}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: b16ea6e35e030f0468a03b421b0c8045, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::AudioManager
-  mainMenuTrack:
-    name: Main Menu
-    clip: {fileID: 8300000, guid: cc738ab2155ab5f4a830736398bf65e9, type: 3}
-    volume: 1
-  explorationTrack:
-    name: Exploration
-    clip: {fileID: 8300000, guid: c8c68f333d83c6440881bad841ae28aa, type: 3}
-    volume: 1
-  bossTrack:
-    name: Boss
-    clip: {fileID: 8300000, guid: b40e0141f268b1e4fb15c711c4a13271, type: 3}
-    volume: 1
-  winTrack:
-    name: Win
-    clip: {fileID: 8300000, guid: 8c9a9a8b7d8c01a40937b7dcd8727291, type: 3}
-    volume: 1
-  deathTrack:
-    name: Death
-    clip: {fileID: 8300000, guid: 2faf8d90745c2fd4d9682dcb1ff52cc0, type: 3}
-    volume: 1
---- !u!4 &316903841
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 316903839}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 884.1819, y: 351.40814, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &319201175
 GameObject:
   m_ObjectHideFlags: 0
@@ -3180,6 +3116,8 @@ MonoBehaviour:
   audioNormal: {fileID: 0}
   audioHover: {fileID: 0}
   audioPressed: {fileID: 0}
+  enableStartupLoadingVideo: 0
+  startupLoadingVideoClip: {fileID: 0}
 --- !u!4 &588501355
 Transform:
   m_ObjectHideFlags: 0
@@ -11347,4 +11285,3 @@ SceneRoots:
   - {fileID: 2056931158}
   - {fileID: 725527529}
   - {fileID: 588501355}
-  - {fileID: 316903841}

@@ -343,9 +343,9 @@ public class ControlsPanel : MonoBehaviour
     private void CreateAudioVolumeSliders(RectTransform parent)
     {
         AudioManager audioManager = Application.isPlaying ? AudioManager.GetOrCreate() : null;
-        string[] trackNames = { "MainMenu", "Exploration", "Boss", "Win", "Death" };
-        string[] trackLabels = { "Menú Principal", "Exploración", "Boss", "Victoria", "Muerte" };
-        float[] defaultVolumes = { 1f, 1f, 0.8f, 1f, 0.9f };
+        string[] trackNames = { "MainMenu", "Exploration", "Boss", "Win", "Death", "Loading" };
+        string[] trackLabels = { "Menú Principal", "Exploración", "Boss", "Victoria", "Muerte", "Carga" };
+        float[] defaultVolumes = { 1f, 1f, 0.8f, 1f, 0.9f, 1f };
 
         RectTransform audioContent = CreateScrollView("AudioScrollView", new Vector2(0.05f, 0.12f), new Vector2(0.95f, 0.78f), parent);
 

@@ -3,6 +3,7 @@ using UnityEngine.SceneManagement;
 using UnityEngine.Events;
 using UnityEngine.UI;
 using UnityEngine.EventSystems;
+using UnityEngine.Video;
 
 [ExecuteAlways]
 public class MenuController : MonoBehaviour
@@ -37,6 +38,10 @@ public class MenuController : MonoBehaviour
     public Sprite audioNormal;
     public Sprite audioHover;
     public Sprite audioPressed;
+
+    [Header("Pantalla de carga")]
+    public bool enableStartupLoadingVideo = true;
+    public VideoClip startupLoadingVideoClip;
 
     public void PlayGame()
     {
@@ -202,6 +207,14 @@ public class MenuController : MonoBehaviour
         if (Application.isPlaying)
         {
             AudioManager.GetOrCreate();
+            if (enableStartupLoadingVideo && startupLoadingVideoClip != null)
+            {
+                LoadingScreenController.Create(startupLoadingVideoClip, "Loading", "MainMenu");
+            }
+            else
+            {
+                AudioManager.Instance?.PlayTrack("MainMenu");
+            }
         }
         if (FindFirstObjectByType<EventSystem>() == null)
         {

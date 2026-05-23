@@ -20,6 +20,7 @@ public class AudioManager : MonoBehaviour
     public MusicTrack bossTrack;
     public MusicTrack winTrack;
     public MusicTrack deathTrack;
+    public MusicTrack loadingTrack;
 
     [Header("Audio Sources")]
     private AudioSource musicSource;
@@ -185,6 +186,7 @@ public class AudioManager : MonoBehaviour
         AddTrackLookup("Boss", bossTrack);
         AddTrackLookup("Win", winTrack);
         AddTrackLookup("Death", deathTrack);
+        AddTrackLookup("Loading", loadingTrack);
     }
 
     private void AddTrackLookup(string key, MusicTrack track)
@@ -224,6 +226,7 @@ public class AudioManager : MonoBehaviour
         trackVolumes["Boss"] = PlayerPrefs.GetFloat("MusicVolume_Boss", 0.8f);
         trackVolumes["Win"] = PlayerPrefs.GetFloat("MusicVolume_Win", 1f);
         trackVolumes["Death"] = PlayerPrefs.GetFloat("MusicVolume_Death", 0.9f);
+        trackVolumes["Loading"] = PlayerPrefs.GetFloat("MusicVolume_Loading", 1f);
     }
 
     private System.Collections.IEnumerator FadeOutCoroutine(float duration)
