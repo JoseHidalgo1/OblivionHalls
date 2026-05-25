@@ -62,7 +62,11 @@ public class LeverDoor : MonoBehaviour
     private GameObject promptObject;
     private TextMesh promptText;
     private bool playerHasPassedThroughDoor = false; // Rastrear si el jugador pasó por la puerta abierta
+    private bool playerEnteredPassTrigger = false;
     private BoxCollider2D passTriggerCollider;
+    private GameObject passTriggerObject;
+    private LeverDoorPassTrigger passTriggerHelper;
+    private float passTriggerEnableTime = 0f;
 
     void Start()
     {
@@ -78,6 +82,7 @@ public class LeverDoor : MonoBehaviour
             }
 
             passTriggerCollider = CreatePlayerPassTrigger();
+            EnablePlayerPassTrigger(false);
 
             // Calcular posición abierta basada en dirección
             openPosition = closedPosition + Vector3.up * doorMoveDistance;
@@ -99,32 +104,24 @@ public class LeverDoor : MonoBehaviour
             return null;
         }
 
-        // Buscar un trigger existente en el mismo GameObject (distinto al collider de puerta)
-        BoxCollider2D passCollider = null;
-        BoxCollider2D[] boxColliders = GetComponents<BoxCollider2D>();
-        foreach (var bc in boxColliders)
-        {
-            if (bc == doorCollider)
-                continue;
-            if (bc.isTrigger)
-            {
-                passCollider = bc;
-                break;
-            }
-        }
-        if (passCollider == null)
-        {
-            passCollider = gameObject.AddComponent<BoxCollider2D>();
-        }
+        // Crear un trigger independiente para detectar cuando el jugador pasa por la puerta abierta.
+        passTriggerObject = new GameObject(gameObject.name + "_PassTrigger");
+        passTriggerObject.transform.SetParent(transform.parent, true);
+        passTriggerObject.transform.position = sourceCollider.bounds.center;
+        passTriggerObject.layer = gameObject.layer;
 
+        passTriggerHelper = passTriggerObject.AddComponent<LeverDoorPassTrigger>();
+        passTriggerHelper.parentLeverDoor = this;
+
+        BoxCollider2D passCollider = passTriggerObject.AddComponent<BoxCollider2D>();
         Bounds bounds = sourceCollider.bounds;
         passCollider.isTrigger = true;
-        passCollider.offset = transform.InverseTransformPoint(bounds.center);
+        passCollider.offset = Vector2.zero;
         passCollider.size = new Vector2(bounds.size.x, bounds.size.y);
         passCollider.usedByEffector = false;
-        passCollider.enabled = true;
+        passCollider.enabled = false;
 
-        Debug.Log("[LeverDoor] Trigger de paso creado/actualizado para la puerta abierta.");
+        Debug.Log("[LeverDoor] Trigger de paso creado para la puerta abierta.");
         return passCollider;
     }
 
@@ -143,25 +140,7 @@ public class LeverDoor : MonoBehaviour
             return;
         }
 
-        // Para puertas abiertas, detectar si el jugador las atraviesa
-        if (!isLever && isDoorOpen && triggerWavesOnPlayerPass)
-        {
-            if (!collision.CompareTag("Player") && collision.gameObject.name != "Jugador" && collision.gameObject.name != "Player")
-            {
-                return;
-            }
-
-            playerHasPassedThroughDoor = true;
-            Debug.Log("[LeverDoor] Jugador pasó por la puerta abierta. Cerrando puerta y preparando oleadas...");
-            if (linkedLever != null)
-            {
-                linkedLever.DeactivateLever();
-            }
-            else
-            {
-                CloseDoor();
-            }
-        }
+        // Removed player pass handling for open doors
     }
 
     void OnTriggerStay2D(Collider2D collision)
@@ -310,6 +289,8 @@ public class LeverDoor : MonoBehaviour
         transform.position = openPosition;
         isDoorOpen = true;
 
+        EnablePlayerPassTrigger(true);
+
         // Desactivar colisión si está configurado
         if (disableColliderWhenOpen)
         {
@@ -334,6 +315,8 @@ public class LeverDoor : MonoBehaviour
     private IEnumerator AnimateDoorClosing()
     {
         float elapsedTime = 0f;
+
+        EnablePlayerPassTrigger(false);
 
         // Reactivar colisión antes de cerrar
         if (disableColliderWhenOpen && doorCollider != null)
@@ -400,6 +383,75 @@ public class LeverDoor : MonoBehaviour
             {
                 col.enabled = !disable ? true : false;
             }
+        }
+    }
+
+    private void EnablePlayerPassTrigger(bool enable)
+    {
+        if (passTriggerCollider == null)
+        {
+            return;
+        }
+
+        passTriggerCollider.enabled = enable;
+        if (enable)
+        {
+            passTriggerEnableTime = Time.time;
+        }
+        else
+        {
+            passTriggerEnableTime = 0f;
+        }
+    }
+
+    public void HandlePlayerPassTriggerEnter(Collider2D collision)
+    {
+        if (!isDoorOpen || !triggerWavesOnPlayerPass || passTriggerCollider == null || !passTriggerCollider.enabled)
+        {
+            return;
+        }
+
+        if (!collision.CompareTag("Player") && collision.gameObject.name != "Jugador" && collision.gameObject.name != "Player")
+        {
+            return;
+        }
+
+        if (Time.time - passTriggerEnableTime < 0.25f)
+        {
+            Debug.Log("[LeverDoor] Ignorando trigger de paso inmediato tras abrir.");
+            return;
+        }
+        playerEnteredPassTrigger = true;
+        Debug.Log("[LeverDoor] Jugador entró al trigger de paso. Esperando a que salga para cerrar la puerta...");
+    }
+
+    public void HandlePlayerPassTriggerExit(Collider2D collision)
+    {
+        if (!isDoorOpen || !triggerWavesOnPlayerPass || passTriggerCollider == null || !passTriggerCollider.enabled)
+        {
+            return;
+        }
+
+        if (!collision.CompareTag("Player") && collision.gameObject.name != "Jugador" && collision.gameObject.name != "Player")
+        {
+            return;
+        }
+
+        if (!playerEnteredPassTrigger)
+        {
+            return;
+        }
+
+        playerEnteredPassTrigger = false;
+        playerHasPassedThroughDoor = true;
+        Debug.Log("[LeverDoor] Jugador salió del trigger de paso. Cerrando puerta y preparando oleadas...");
+        if (linkedLever != null)
+        {
+            linkedLever.DeactivateLever();
+        }
+        else
+        {
+            CloseDoor();
         }
     }
 
