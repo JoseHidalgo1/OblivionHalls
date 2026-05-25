@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using System;
 
 public class GameMusicManager : MonoBehaviour
 {
@@ -20,6 +21,7 @@ public class GameMusicManager : MonoBehaviour
 
         Instance = this;
         DontDestroyOnLoad(gameObject);
+        SceneManager.sceneLoaded += OnSceneLoaded;
     }
 
     void Start()
@@ -30,6 +32,37 @@ public class GameMusicManager : MonoBehaviour
         {
             audioManager.CrossfadeTrack("Exploration", 1.5f);
         }
+    }
+
+    void OnDestroy()
+    {
+        SceneManager.sceneLoaded -= OnSceneLoaded;
+    }
+
+    private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
+    {
+        if (!IsGameLevelScene(scene.name))
+        {
+            return;
+        }
+
+        isInBossRoom = false;
+        hasPlayedBossMusic = false;
+
+        AudioManager audioManager = AudioManager.GetOrCreate();
+        if (audioManager != null && !audioManager.IsPlaying("Exploration"))
+        {
+            audioManager.CrossfadeTrack("Exploration", 1.5f);
+        }
+    }
+
+    private bool IsGameLevelScene(string sceneName)
+    {
+        if (string.IsNullOrWhiteSpace(sceneName))
+            return false;
+
+        return !string.Equals(sceneName, "MainMenu", StringComparison.OrdinalIgnoreCase)
+            && !string.Equals(sceneName, "LoadingScene", StringComparison.OrdinalIgnoreCase);
     }
 
     void Update()

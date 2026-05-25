@@ -9,6 +9,10 @@ public class BossRoomTrigger : MonoBehaviour
     [Header("Configuración")]
     [SerializeField] private bool isBossRoomEntrance = false; // Marca esta puerta como entrada a la sala del boss
     [SerializeField] private bool isBossRoomExit = false; // Marca esta puerta como salida de la sala del boss
+    [SerializeField] private WaveSpawner waveSpawner;
+    [SerializeField] private LeverDoor doorLeverToDeactivate;
+    [SerializeField] private bool closeDoorOnTrigger = true;
+    [SerializeField] private bool startWavesOnTrigger = true;
 
     private void OnTriggerEnter2D(Collider2D collision)
     {
@@ -21,6 +25,16 @@ public class BossRoomTrigger : MonoBehaviour
             if (musicManager != null)
             {
                 musicManager.EnterBossRoom();
+            }
+
+            if (closeDoorOnTrigger && doorLeverToDeactivate != null)
+            {
+                doorLeverToDeactivate.DeactivateLever();
+            }
+
+            if (startWavesOnTrigger && waveSpawner != null)
+            {
+                waveSpawner.StartWaves();
             }
         }
         else if (isBossRoomExit)

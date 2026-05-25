@@ -227,6 +227,7 @@ MonoBehaviour:
   attackRange: 1.2
   attackOffset: 0.7
   spriteFacesRightByDefault: 0
+  invertSpriteFacing: 0
   attackDamage: 1
   attackCooldown: 1.7
   attackWindupRatio: 0.45

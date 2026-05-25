@@ -20,6 +20,9 @@ public class GameOverUI : MonoBehaviour
     [SerializeField] private Sprite quitNormal;
     [SerializeField] private Sprite quitHover;
 
+    [Header("Scene Flow")]
+    [SerializeField] private string newGameSceneName = "GameScene";
+
     private PlayerHealth playerHealth;
 
     void Start()
@@ -106,7 +109,26 @@ public class GameOverUI : MonoBehaviour
     {
         Time.timeScale = 1f;
         GameStats.GetOrCreate()?.RegisterGeneralRestart();
+        if (!string.IsNullOrWhiteSpace(newGameSceneName) && IsSceneInBuildSettings(newGameSceneName))
+        {
+            SceneManager.LoadScene(newGameSceneName);
+            return;
+        }
+
         SceneManager.LoadScene(SceneManager.GetActiveScene().name);
+    }
+
+    private bool IsSceneInBuildSettings(string sceneName)
+    {
+        int totalScenes = SceneManager.sceneCountInBuildSettings;
+        for (int i = 0; i < totalScenes; i++)
+        {
+            string path = SceneUtility.GetScenePathByBuildIndex(i);
+            string name = System.IO.Path.GetFileNameWithoutExtension(path);
+            if (name == sceneName)
+                return true;
+        }
+        return false;
     }
 
     private void GoToMainMenu()

@@ -156,7 +156,7 @@ SpriteRenderer:
   m_LightmapParameters: {fileID: 0}
   m_GlobalIlluminationMeshLod: 0
   m_SortingLayerID: 1875862075
-  m_SortingLayer: 6
+  m_SortingLayer: 5
   m_SortingOrder: -1
   m_MaskInteraction: 0
   m_Sprite: {fileID: -5777422551746021335, guid: 9cae39d0c6dc0aa429af9def7094f496, type: 3}
@@ -227,6 +227,7 @@ MonoBehaviour:
   attackRange: 1.2
   attackOffset: 0.7
   spriteFacesRightByDefault: 0
+  invertSpriteFacing: 0
   attackDamage: 1
   attackCooldown: 1.7
   attackWindupRatio: 0.45
@@ -242,6 +243,10 @@ MonoBehaviour:
   lootDropChance: 0.6
   medicinaItem: {fileID: 0}
   pastillasItem: {fileID: 0}
+  isBossEnemy: 0
+  levelCompleteDelay: 10
+  bossCountdownPrefab: {fileID: 0}
+  bossCountdownOffset: {x: 0, y: 1.2, z: 0}
   lootSpawnRadius: 0.25
   lootSortingLayer: Background
   lootSortingOrder: -1

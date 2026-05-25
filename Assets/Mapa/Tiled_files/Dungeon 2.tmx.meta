@@ -1,0 +1,50 @@
+fileFormatVersion: 2
+guid: 30827f193b917ad4cb2f3362040470ac
+ScriptedImporter:
+  internalIDToNameTable: []
+  externalObjects: {}
+  serializedVersion: 2
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+  script: {fileID: 11500000, guid: 1fa25d03934ea624a82bf2fcee6f0873, type: 3}
+  missingFiles: []
+  errors: []
+  warnings:
+  - Tileset 'cracked_tiles' is an embedded tileset. Exported tilesets are preferred.
+  - Tileset 'cracked_tiles_floor' is an embedded tileset. Exported tilesets are preferred.
+  - Tileset 'walls_floor' is an embedded tileset. Exported tilesets are preferred.
+  - Tileset 'Water_coasts_animation' is an embedded tileset. Exported tilesets are
+    preferred.
+  - Tileset 'Water_detilazation' is an embedded tileset. Exported tilesets are preferred.
+  - Tileset 'Water_coasts_animation_decorative_cracks' is an embedded tileset. Exported
+    tilesets are preferred.
+  - Tileset 'fire_animation' is an embedded tileset. Exported tilesets are preferred.
+  - Tileset 'fire_animation2' is an embedded tileset. Exported tilesets are preferred.
+  - Tileset 'doors_lever_chest_animation' is an embedded tileset. Exported tilesets
+    are preferred.
+  - Tileset 'Objects' is an embedded tileset. Exported tilesets are preferred.
+  - Tileset 'trap_animation' is an embedded tileset. Exported tilesets are preferred.
+  missingSortingLayers: []
+  missingLayers: []
+  missingTags: []
+  importerVersion: 26
+  pixelsPerUnit: 100
+  edgesPerEllipse: 32
+  numberOfObjectsImported: 12418
+  tilesAsObjects: 0
+  sortingMode: 0
+  isIsometric: 0
+  customImporterClassName: 
+  internalTilesets:
+  - {instanceID: 0}
+  - {instanceID: 0}
+  - {instanceID: 0}
+  - {instanceID: 0}
+  - {instanceID: 0}
+  - {instanceID: 0}
+  - {instanceID: 0}
+  - {instanceID: 0}
+  - {instanceID: 0}
+  - {instanceID: 0}
+  - {instanceID: 0}

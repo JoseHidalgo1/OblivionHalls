@@ -16,6 +16,7 @@ public class EnemyController : MonoBehaviour
     [SerializeField] private float attackRange = 1.2f;
     [SerializeField] private float attackOffset = 0.7f;
     [SerializeField] private bool spriteFacesRightByDefault = false;
+    [SerializeField] private bool invertSpriteFacing = false;
 
     [Header("Ataque")]
     [SerializeField] private int attackDamage = 1;
@@ -80,6 +81,8 @@ public class EnemyController : MonoBehaviour
         {
             ApplyEnemySorting();
         }
+
+        ResolveSpriteFacingOverride();
 
         if (forceVisibleSpriteStyle)
         {
@@ -238,7 +241,8 @@ public class EnemyController : MonoBehaviour
         }
 
         float facingSign = directionToTarget.x >= 0f ? 1f : -1f;
-        if (!spriteFacesRightByDefault)
+        bool effectiveSpriteFacesRightByDefault = spriteFacesRightByDefault ^ invertSpriteFacing;
+        if (!effectiveSpriteFacesRightByDefault)
         {
             facingSign *= -1f;
         }
@@ -246,6 +250,28 @@ public class EnemyController : MonoBehaviour
         Vector3 localScale = transform.localScale;
         localScale.x = Mathf.Abs(localScale.x) * facingSign;
         transform.localScale = localScale;
+    }
+
+    private void ResolveSpriteFacingOverride()
+    {
+        string enemyName = name.ToLowerInvariant();
+        if (
+            enemyName.Contains("minotauro") ||
+            enemyName.Contains("calabaza") ||
+            enemyName.Contains("cyclope") ||
+            enemyName.Contains("lobo") ||
+            enemyName.Contains("espiritu") ||
+            enemyName.Contains("esqueleto") ||
+            enemyName.Contains("murcielago") ||
+            enemyName.Contains("centauro") ||
+            enemyName.Contains("zombie") ||
+            enemyName.Contains("slimeazul") ||
+            enemyName.Contains("slimemadrezul") ||
+            enemyName.Contains("huargo")
+        )
+        {
+            invertSpriteFacing = true;
+        }
     }
 
     private void TryStartAttack()

@@ -16,6 +16,9 @@ public class LevelCompleteUI : MonoBehaviour
     [SerializeField] private Image nextLevelImage;
     [SerializeField] private Image mainMenuImage;
     [SerializeField] private Image quitImage;
+    [Header("Scene Flow")]
+    [SerializeField] private string nextLevelSceneName;
+    [SerializeField] private string finalLevelSceneName = "MainMenu";
 
     [SerializeField] private Sprite nextLevelNormal;
     [SerializeField] private Sprite nextLevelHover;
@@ -119,6 +122,12 @@ public class LevelCompleteUI : MonoBehaviour
     private void GoToNextLevel()
     {
         Time.timeScale = 1f;
+        if (!string.IsNullOrWhiteSpace(nextLevelSceneName) && IsSceneInBuildSettings(nextLevelSceneName))
+        {
+            SceneManager.LoadScene(nextLevelSceneName);
+            return;
+        }
+
         int currentSceneIndex = SceneManager.GetActiveScene().buildIndex;
         int nextSceneIndex = currentSceneIndex + 1;
 
@@ -128,7 +137,22 @@ public class LevelCompleteUI : MonoBehaviour
             return;
         }
 
-        SceneManager.LoadScene("MainMenu");
+        SceneManager.LoadScene(finalLevelSceneName);
+    }
+
+    private bool IsSceneInBuildSettings(string sceneName)
+    {
+        int totalScenes = SceneManager.sceneCountInBuildSettings;
+        for (int i = 0; i < totalScenes; i++)
+        {
+            string path = SceneUtility.GetScenePathByBuildIndex(i);
+            string name = System.IO.Path.GetFileNameWithoutExtension(path);
+            if (name == sceneName)
+            {
+                return true;
+            }
+        }
+        return false;
     }
 
     private void GoToMainMenu()

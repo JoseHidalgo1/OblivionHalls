@@ -35,6 +35,12 @@ public class LeverDoor : MonoBehaviour
     [SerializeField] private string leverSortingLayerName = "Doors";
     [SerializeField] private int leverSortingOrder = 0;
 
+    [Header("Sistema de Oleadas")]
+    [SerializeField] private WaveSpawner waveSpawner; // Referencia al WaveSpawner
+    [SerializeField] private bool triggerWavesWhenDoorCloses = true;
+    [SerializeField] private bool triggerWavesOnPlayerPass = true; // Si true, se activan oleadas cuando jugador pasa por puerta abierta
+    [SerializeField] private Collider2D playerPassTrigger; // Trigger opcional para detectar paso del jugador
+
     [Header("Interacción")]
     [SerializeField] private Key interactionKey = Key.F;
     [SerializeField] private string closedPromptMessage = "Presiona F para abrir";
@@ -55,6 +61,8 @@ public class LeverDoor : MonoBehaviour
     private bool isPlayerInRange = false;
     private GameObject promptObject;
     private TextMesh promptText;
+    private bool playerHasPassedThroughDoor = false; // Rastrear si el jugador pasó por la puerta abierta
+    private BoxCollider2D passTriggerCollider;
 
     void Start()
     {
@@ -69,6 +77,8 @@ public class LeverDoor : MonoBehaviour
                 doorCollider = GetComponentInChildren<Collider2D>();
             }
 
+            passTriggerCollider = CreatePlayerPassTrigger();
+
             // Calcular posición abierta basada en dirección
             openPosition = closedPosition + Vector3.up * doorMoveDistance;
             UpdateDoorVisuals(isDoorOpen);
@@ -80,20 +90,78 @@ public class LeverDoor : MonoBehaviour
         }
     }
 
+    private BoxCollider2D CreatePlayerPassTrigger()
+    {
+        Collider2D sourceCollider = playerPassTrigger != null ? playerPassTrigger : (doorColliderOverride != null ? doorColliderOverride : doorCollider);
+        if (sourceCollider == null)
+        {
+            Debug.LogWarning("[LeverDoor] No se encontró collider para crear el trigger de paso de jugador. Asigna playerPassTrigger manualmente o añade un collider a la puerta.");
+            return null;
+        }
+
+        // Buscar un trigger existente en el mismo GameObject (distinto al collider de puerta)
+        BoxCollider2D passCollider = null;
+        BoxCollider2D[] boxColliders = GetComponents<BoxCollider2D>();
+        foreach (var bc in boxColliders)
+        {
+            if (bc == doorCollider)
+                continue;
+            if (bc.isTrigger)
+            {
+                passCollider = bc;
+                break;
+            }
+        }
+        if (passCollider == null)
+        {
+            passCollider = gameObject.AddComponent<BoxCollider2D>();
+        }
+
+        Bounds bounds = sourceCollider.bounds;
+        passCollider.isTrigger = true;
+        passCollider.offset = transform.InverseTransformPoint(bounds.center);
+        passCollider.size = new Vector2(bounds.size.x, bounds.size.y);
+        passCollider.usedByEffector = false;
+        passCollider.enabled = true;
+
+        Debug.Log("[LeverDoor] Trigger de paso creado/actualizado para la puerta abierta.");
+        return passCollider;
+    }
+
     void OnTriggerEnter2D(Collider2D collision)
     {
-        if (!isLever)
+        // Primero, permitir que las palancas sigan funcionando
+        if (isLever)
         {
+            if (!collision.CompareTag("Player") && collision.gameObject.name != "Jugador" && collision.gameObject.name != "Player")
+            {
+                return;
+            }
+
+            isPlayerInRange = true;
+            ShowPrompt();
             return;
         }
 
-        if (!collision.CompareTag("Player") && collision.gameObject.name != "Jugador" && collision.gameObject.name != "Player")
+        // Para puertas abiertas, detectar si el jugador las atraviesa
+        if (!isLever && isDoorOpen && triggerWavesOnPlayerPass)
         {
-            return;
-        }
+            if (!collision.CompareTag("Player") && collision.gameObject.name != "Jugador" && collision.gameObject.name != "Player")
+            {
+                return;
+            }
 
-        isPlayerInRange = true;
-        ShowPrompt();
+            playerHasPassedThroughDoor = true;
+            Debug.Log("[LeverDoor] Jugador pasó por la puerta abierta. Cerrando puerta y preparando oleadas...");
+            if (linkedLever != null)
+            {
+                linkedLever.DeactivateLever();
+            }
+            else
+            {
+                CloseDoor();
+            }
+        }
     }
 
     void OnTriggerStay2D(Collider2D collision)
@@ -285,6 +353,14 @@ public class LeverDoor : MonoBehaviour
 
         transform.position = closedPosition;
         isDoorOpen = false;
+
+        // Activar oleadas si el jugador pasó por la puerta
+        if (triggerWavesWhenDoorCloses && triggerWavesOnPlayerPass && playerHasPassedThroughDoor && waveSpawner != null)
+        {
+            Debug.Log("[LeverDoor] Puerta cerrada y jugador pasó. Iniciando oleadas...");
+            waveSpawner.StartWaves();
+            playerHasPassedThroughDoor = false; // Reset el flag
+        }
 
         Debug.Log("[LeverDoor] Puerta cerrada.");
     }
