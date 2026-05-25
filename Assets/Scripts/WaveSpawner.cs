@@ -237,8 +237,23 @@ public class WaveSpawner : MonoBehaviour
 
         if (enemyInstance != null)
         {
+            // Forzar vida 1 si tiene EnemyController
+            var ec = enemyInstance.GetComponent<EnemyController>();
+            if (ec != null)
+            {
+                var maxHealthField = enemyInstance.GetType().GetField("maxHealth", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+                if (maxHealthField != null)
+                {
+                    maxHealthField.SetValue(ec, 1);
+                }
+                var currentHealthField = enemyInstance.GetType().GetField("currentHealth", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+                if (currentHealthField != null)
+                {
+                    currentHealthField.SetValue(ec, 1);
+                }
+            }
             spawnedEnemies.Add(enemyInstance);
-            Debug.Log($"[WaveSpawner] Enemigo spawneado: {entry.enemyPrefabName} en {enemyInstance.transform.position}");
+            Debug.Log($"[WaveSpawner] Enemigo spawneado: {entry.enemyPrefabName} en {enemyInstance.transform.position} (vida 1)");
         }
     }
 

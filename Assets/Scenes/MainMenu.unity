@@ -1982,6 +1982,7 @@ GameObject:
   - component: {fileID: 388684909}
   - component: {fileID: 388684908}
   - component: {fileID: 388684907}
+  - component: {fileID: 388684910}
   m_Layer: 0
   m_Name: BackButton
   m_TagString: Untagged
@@ -2006,7 +2007,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.35, y: 0.02}
   m_AnchorMax: {x: 0.65, y: 0.1}
-  m_AnchoredPosition: {x: 0, y: 0}
+  m_AnchoredPosition: {x: 0, y: 9.450012}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &388684907
@@ -2066,14 +2067,14 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
   m_Material: {fileID: 0}
-  m_Color: {r: 0.2, g: 0.2, b: 0.2, a: 1}
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 0}
+  m_Sprite: {fileID: 1286967997032707097, guid: 86bcbb85552bac74eab9f8e42d2fedf1, type: 3}
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
@@ -2091,6 +2092,26 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 388684905}
   m_CullTransparentMesh: 1
+--- !u!114 &388684910
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 388684905}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7f1d50d9d5d3dbf40bdb5cf01ffd71ad, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::AnimatedMenuButton
+  normalSprite: {fileID: 1286967997032707097, guid: 86bcbb85552bac74eab9f8e42d2fedf1, type: 3}
+  hoverSprite: {fileID: 652849551791619392, guid: 7d75b7333e483084e91e21c7d87d8cd7, type: 3}
+  pressedSprite: {fileID: 652849551791619392, guid: 7d75b7333e483084e91e21c7d87d8cd7, type: 3}
+  extraSprite: {fileID: 0}
+  extraImage: {fileID: 0}
+  onClick:
+    m_PersistentCalls:
+      m_Calls: []
 --- !u!1 &391168662
 GameObject:
   m_ObjectHideFlags: 0
@@ -3063,8 +3084,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 0, y: 0}
+  m_AnchoredPosition: {x: 0, y: -0.57629395}
+  m_SizeDelta: {x: -53.0162, y: -19.5929}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!1 &588501353
 GameObject:
@@ -5069,8 +5090,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.05, y: 0.12}
   m_AnchorMax: {x: 0.95, y: 0.78}
-  m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 0, y: 0}
+  m_AnchoredPosition: {x: -0.00015258789, y: 3.457611}
+  m_SizeDelta: {x: 42.699, y: 6.9151}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1008520331
 MonoBehaviour:
@@ -6800,7 +6821,7 @@ MonoBehaviour:
     m_HorizontalOverflow: 0
     m_VerticalOverflow: 0
     m_LineSpacing: 1
-  m_Text: Volver
+  m_Text: 
 --- !u!222 &1300773336
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -7039,7 +7060,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 0, y: 0}
+  m_AnchoredPosition: {x: 0, y: -5}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1372832574
@@ -7075,7 +7096,7 @@ MonoBehaviour:
     m_HorizontalOverflow: 0
     m_VerticalOverflow: 0
     m_LineSpacing: 1
-  m_Text: Volver
+  m_Text: 
 --- !u!222 &1372832575
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -7271,6 +7292,7 @@ GameObject:
   - component: {fileID: 1390851399}
   - component: {fileID: 1390851398}
   - component: {fileID: 1390851397}
+  - component: {fileID: 1390851400}
   m_Layer: 0
   m_Name: AudioBackButton
   m_TagString: Untagged
@@ -7295,7 +7317,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.35, y: 0.02}
   m_AnchorMax: {x: 0.65, y: 0.1}
-  m_AnchoredPosition: {x: 0, y: 0}
+  m_AnchoredPosition: {x: -0.00015258789, y: 5.908203}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1390851397
@@ -7355,14 +7377,14 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
   m_Material: {fileID: 0}
-  m_Color: {r: 0.2, g: 0.2, b: 0.2, a: 1}
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 0}
+  m_Sprite: {fileID: 1286967997032707097, guid: 86bcbb85552bac74eab9f8e42d2fedf1, type: 3}
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
@@ -7380,6 +7402,26 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1390851395}
   m_CullTransparentMesh: 1
+--- !u!114 &1390851400
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1390851395}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7f1d50d9d5d3dbf40bdb5cf01ffd71ad, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::AnimatedMenuButton
+  normalSprite: {fileID: 1286967997032707097, guid: 86bcbb85552bac74eab9f8e42d2fedf1, type: 3}
+  hoverSprite: {fileID: 652849551791619392, guid: 7d75b7333e483084e91e21c7d87d8cd7, type: 3}
+  pressedSprite: {fileID: 652849551791619392, guid: 7d75b7333e483084e91e21c7d87d8cd7, type: 3}
+  extraSprite: {fileID: 0}
+  extraImage: {fileID: 0}
+  onClick:
+    m_PersistentCalls:
+      m_Calls: []
 --- !u!1 &1411795634
 GameObject:
   m_ObjectHideFlags: 0
