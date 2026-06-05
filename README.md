@@ -101,25 +101,6 @@ Este proyecto usa Unity 2024.3.9f1 y Universal Render Pipeline. El juego está b
 4. Abre la escena principal desde `Assets/Scenes/MainMenu.unity`.
 5. Ejecuta el juego con `Play`.
 
-## Compilar para PC
-
-Para generar un ejecutable del juego para Windows:
-
-1. Ve a **File → Build Settings**.
-2. Selecciona **Windows Standalone** como plataforma.
-3. Click en **Switch Platform** (espera a que compile).
-4. En **Player Settings**, ajusta:
-   - **Product Name:** "Oblivion Halls"
-   - **Resolution:** tamaño de pantalla deseado
-   - **Fullscreen Mode:** Windowed (recomendado)
-5. Click en **Build** y elige carpeta de destino.
-6. Unity generará un `.exe` ejecutable.
-
-El resultado incluirá:
-- `OblivionHalls.exe` - Archivo ejecutable principal
-- `OblivionHalls_Data/` - Carpeta con recursos
-- `UnityCrashHandler64.exe` - Manejador de crashes
-
 ## Controles
 
 - Movimiento: `W`, `A`, `S`, `D` o flechas.
