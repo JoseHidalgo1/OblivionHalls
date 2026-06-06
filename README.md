@@ -133,6 +133,10 @@ Este proyecto usa Unity 2024.3.9f1 y Universal Render Pipeline. El juego está b
 - **Segundo nivel completamente funcional:** GameScene 2 con sistema de oleadas integrado.
 - **Música persistente:** La música de cada nivel se mantiene al cambiar escenas.
 - **Orientación de enemigos mejorada:** Nuevos tipos de enemigos con orientación correcta del sprite.
+- **Soporte móvil Android:** HUD táctil móvil con joystick y botones personalizables.
+- **HUD móvil oculto en PC:** el HUD de Android ya no aparece cuando se juega en ordenador.
+- **Interacción táctil de inventario:** doble toque para usar, pulsación larga para soltar y arrastrar fuera del inventario para descartar.
+- **Texto de interacción actualizado:** pista de recogida en suelo cambiada a `Interactuar`.
 
 ## Notas de desarrollo
 

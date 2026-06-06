@@ -40,7 +40,7 @@ public class InventoryUI : MonoBehaviour
 
     [Header("Hint de recogida")]
     [SerializeField] private bool showPickupHint = true;
-    [SerializeField] private string pickupHintMessage = "Presiona Q para recoger";
+    [SerializeField] private string pickupHintMessage = "Interactuar";
     [SerializeField] private float pickupHintHeight = 0.7f;
     [SerializeField] private int pickupHintSortingOrder = 50;
 
@@ -63,6 +63,12 @@ public class InventoryUI : MonoBehaviour
     private Image dragGhostImage;
     private int dragHoverIndex = -1;
     private readonly Dictionary<Image, Color> slotOriginalColors = new Dictionary<Image, Color>();
+
+    private int longPressSlotIndex = -1;
+    private Coroutine longPressCoroutine;
+    private bool longPressTriggered;
+    private bool suppressNextClick;
+    private readonly float longPressDuration = 1f;
 
     void Awake()
     {
@@ -101,7 +107,7 @@ public class InventoryUI : MonoBehaviour
 
     void Update()
     {
-        if (Keyboard.current != null && Keyboard.current[KeyBindings.GetKey(GameAction.Inventory)]?.wasPressedThisFrame == true)
+        if (ActionInput.WasPressedThisFrame(GameAction.Inventory))
         {
             ToggleInventory();
         }
@@ -118,7 +124,7 @@ public class InventoryUI : MonoBehaviour
             UpdateDragGhostPosition(Mouse.current.position.ReadValue());
         }
 
-        if (Keyboard.current != null && Keyboard.current[KeyBindings.GetKey(GameAction.Pickup)]?.wasPressedThisFrame == true)
+        if (ActionInput.WasPressedThisFrame(GameAction.Interact) || ActionInput.WasPressedThisFrame(GameAction.Pickup))
         {
             TryPickupNearbyDroppedItem();
         }
@@ -256,7 +262,6 @@ public class InventoryUI : MonoBehaviour
 
             int cachedIndex = index;
             slotViews[index].button.onClick.RemoveAllListeners();
-            slotViews[index].button.onClick.AddListener(() => OnSlotClicked(cachedIndex));
 
             EventTrigger trigger = slotViews[index].button.GetComponent<EventTrigger>();
             if (trigger == null)
@@ -281,6 +286,36 @@ public class InventoryUI : MonoBehaviour
             });
 
             trigger.triggers.Add(pointerClickEntry);
+
+            EventTrigger.Entry pointerDownEntry = new EventTrigger.Entry
+            {
+                eventID = EventTriggerType.PointerDown
+            };
+
+            pointerDownEntry.callback.AddListener(data =>
+            {
+                PointerEventData pointerData = data as PointerEventData;
+                if (pointerData != null)
+                {
+                    OnSlotPointerDown(cachedIndex, pointerData);
+                }
+            });
+            trigger.triggers.Add(pointerDownEntry);
+
+            EventTrigger.Entry pointerUpEntry = new EventTrigger.Entry
+            {
+                eventID = EventTriggerType.PointerUp
+            };
+
+            pointerUpEntry.callback.AddListener(data =>
+            {
+                PointerEventData pointerData = data as PointerEventData;
+                if (pointerData != null)
+                {
+                    OnSlotPointerUp(cachedIndex, pointerData);
+                }
+            });
+            trigger.triggers.Add(pointerUpEntry);
 
             EventTrigger.Entry beginDragEntry = new EventTrigger.Entry
             {
@@ -329,12 +364,77 @@ public class InventoryUI : MonoBehaviour
         }
     }
 
+    private void OnSlotPointerDown(int slotIndex, PointerEventData pointerData)
+    {
+        if (pointerData.button != PointerEventData.InputButton.Left)
+            return;
+
+        InventoryManager inv = InventoryManager.Instance;
+        if (inv == null)
+            return;
+
+        Item item = inv.GetItemAt(slotIndex);
+        if (item == null)
+            return;
+
+        CancelLongPress();
+        longPressSlotIndex = slotIndex;
+        longPressCoroutine = StartCoroutine(LongPressRoutine(slotIndex));
+    }
+
+    private void OnSlotPointerUp(int slotIndex, PointerEventData pointerData)
+    {
+        if (pointerData.button != PointerEventData.InputButton.Left)
+            return;
+
+        if (longPressTriggered && slotIndex == longPressSlotIndex)
+        {
+            longPressTriggered = false;
+            suppressNextClick = true;
+            CancelLongPress();
+            return;
+        }
+
+        CancelLongPress();
+    }
+
+    private System.Collections.IEnumerator LongPressRoutine(int slotIndex)
+    {
+        float elapsed = 0f;
+        while (elapsed < longPressDuration)
+        {
+            if (longPressSlotIndex != slotIndex || isDraggingItem)
+            {
+                yield break;
+            }
+            elapsed += Time.unscaledDeltaTime;
+            yield return null;
+        }
+
+        longPressTriggered = true;
+        DropItemAt(slotIndex);
+        CancelLongPress();
+    }
+
+    private void CancelLongPress()
+    {
+        longPressSlotIndex = -1;
+        longPressTriggered = false;
+        if (longPressCoroutine != null)
+        {
+            StopCoroutine(longPressCoroutine);
+            longPressCoroutine = null;
+        }
+    }
+
     private void OnSlotBeginDrag(int slotIndex, PointerEventData pointerData)
     {
         if (pointerData.button != PointerEventData.InputButton.Left)
         {
             return;
         }
+
+        CancelLongPress();
 
         InventoryManager inv = InventoryManager.Instance;
         if (inv == null)
@@ -402,6 +502,10 @@ public class InventoryUI : MonoBehaviour
             inv.SetItemAt(targetIndex, sourceItem);
             inv.SetItemAt(dragSourceIndex, targetItem);
             Refresh();
+        }
+        else if (dragSourceIndex >= 0 && dragSourceIndex < inv.SlotCount)
+        {
+            DropItemAt(dragSourceIndex);
         }
 
         CancelDragState();
@@ -562,18 +666,36 @@ public class InventoryUI : MonoBehaviour
 
     private void OnSlotPointerClick(int slotIndex, PointerEventData pointerData)
     {
-        if (pointerData.button != PointerEventData.InputButton.Right)
+        if (suppressNextClick)
+        {
+            suppressNextClick = false;
+            return;
+        }
+
+        if (pointerData.button == PointerEventData.InputButton.Right)
+        {
+            RectTransform slotRect = null;
+            if (slotIndex >= 0 && slotIndex < slotViews.Length && slotViews[slotIndex] != null && slotViews[slotIndex].button != null)
+            {
+                slotRect = slotViews[slotIndex].button.GetComponent<RectTransform>();
+            }
+
+            OpenContextMenu(slotIndex, slotRect, pointerData.position);
+            return;
+        }
+
+        if (pointerData.button != PointerEventData.InputButton.Left)
         {
             return;
         }
 
-        RectTransform slotRect = null;
-        if (slotIndex >= 0 && slotIndex < slotViews.Length && slotViews[slotIndex] != null && slotViews[slotIndex].button != null)
+        if (pointerData.clickCount >= 2)
         {
-            slotRect = slotViews[slotIndex].button.GetComponent<RectTransform>();
+            UseItemAt(slotIndex);
+            return;
         }
 
-        OpenContextMenu(slotIndex, slotRect, pointerData.position);
+        OnSlotClicked(slotIndex);
     }
 
     private void OnSlotClicked(int slotIndex)
@@ -754,67 +876,73 @@ public class InventoryUI : MonoBehaviour
 
     private void HandleUseContextAction()
     {
-        InventoryManager inv = InventoryManager.Instance;
-        if (inv == null || contextSlotIndex < 0)
-        {
-            return;
-        }
-
-        Item item = inv.GetItemAt(contextSlotIndex);
-        if (item == null)
-        {
-            HideContextMenu();
-            return;
-        }
-
-        string normalizedName = (item.itemName ?? string.Empty).Trim().ToLowerInvariant();
-        Debug.Log($"Using item: {item.itemName}, normalized: {normalizedName}");
-        bool isHealingItem = normalizedName == "medicina" || normalizedName == "pastillas";
-        bool isFoodItem = normalizedName == "lata" || normalizedName == "lata";
-        Debug.Log($"isHealingItem: {isHealingItem}, isFoodItem: {isFoodItem}");
-        if (!isHealingItem && !isFoodItem)
-        {
-            HideContextMenu();
-            return;
-        }
-
-        PlayerHealth health = GetPlayerHealth();
-        PlayerFoodEnergy foodEnergy = GetPlayerFoodEnergy();
-        Debug.Log($"PlayerHealth found: {health != null}, PlayerFoodEnergy found: {foodEnergy != null}");
-        if (isHealingItem && health != null)
-        {
-            health.Heal(1);
-            Debug.Log("Healed 1 health");
-        }
-        else if (isFoodItem && foodEnergy != null)
-        {
-            foodEnergy.RestoreFood(2);
-            Debug.Log("Restored 2 food");
-        }
-
-        inv.SetItemAt(contextSlotIndex, null);
-        HideContextMenu();
-        HideDetails();
-        Refresh();
+        UseItemAt(contextSlotIndex);
     }
 
     private void HandleDropContextAction()
     {
+        DropItemAt(contextSlotIndex);
+    }
+
+    private bool UseItemAt(int slotIndex)
+    {
         InventoryManager inv = InventoryManager.Instance;
-        if (inv == null || contextSlotIndex < 0)
+        if (inv == null || slotIndex < 0 || slotIndex >= inv.SlotCount)
         {
-            return;
+            return false;
         }
 
-        Item item = inv.GetItemAt(contextSlotIndex);
+        Item item = inv.GetItemAt(slotIndex);
         if (item == null)
         {
             HideContextMenu();
-            return;
+            return false;
+        }
+
+        string normalizedName = (item.itemName ?? string.Empty).Trim().ToLowerInvariant();
+        bool isHealingItem = normalizedName == "medicina" || normalizedName == "pastillas";
+        bool isFoodItem = normalizedName == "lata";
+        if (!isHealingItem && !isFoodItem)
+        {
+            HideContextMenu();
+            return false;
+        }
+
+        PlayerHealth health = GetPlayerHealth();
+        PlayerFoodEnergy foodEnergy = GetPlayerFoodEnergy();
+        if (isHealingItem && health != null)
+        {
+            health.Heal(1);
+        }
+        else if (isFoodItem && foodEnergy != null)
+        {
+            foodEnergy.RestoreFood(2);
+        }
+
+        inv.SetItemAt(slotIndex, null);
+        HideContextMenu();
+        HideDetails();
+        Refresh();
+        return true;
+    }
+
+    private bool DropItemAt(int slotIndex)
+    {
+        InventoryManager inv = InventoryManager.Instance;
+        if (inv == null || slotIndex < 0 || slotIndex >= inv.SlotCount)
+        {
+            return false;
+        }
+
+        Item item = inv.GetItemAt(slotIndex);
+        if (item == null)
+        {
+            HideContextMenu();
+            return false;
         }
 
         SpawnDroppedItem(item);
-        inv.SetItemAt(contextSlotIndex, null);
+        inv.SetItemAt(slotIndex, null);
 
         string normalizedName = (item.itemName ?? string.Empty).Trim().ToLowerInvariant();
         if (normalizedName.Contains("mochila"))
@@ -825,6 +953,7 @@ public class InventoryUI : MonoBehaviour
         HideContextMenu();
         HideDetails();
         Refresh();
+        return true;
     }
 
     private void SpawnDroppedItem(Item item)
@@ -934,7 +1063,7 @@ public class InventoryUI : MonoBehaviour
 
         pickupHintObject = new GameObject("PickupHint");
         pickupHintText = pickupHintObject.AddComponent<TextMesh>();
-        pickupHintText.text = string.Format("Presiona {0} para recoger", KeyBindings.GetKeyDisplayName(GameAction.Pickup));
+        pickupHintText.text = pickupHintMessage;
         pickupHintText.characterSize = 0.08f;
         pickupHintText.fontSize = 64;
         pickupHintText.color = Color.white;
@@ -976,7 +1105,7 @@ public class InventoryUI : MonoBehaviour
 
         if (pickupHintText != null)
         {
-            pickupHintText.text = string.Format("Presiona {0} para recoger", KeyBindings.GetKeyDisplayName(GameAction.Pickup));
+            pickupHintText.text = pickupHintMessage;
         }
 
         if (pickupHintObject != null)
@@ -1111,11 +1240,15 @@ public class InventorySlotView
     public void SetItem(Item item)
     {
         bool hasItem = item != null;
-
-        if (iconImage != null)
+        // Prefer explicit iconImage (legacy). If absent, use the Button's Image component so the
+        // Button itself displays the item icon (useful when slots were simplified to only contain a Button).
+        Image target = iconImage != null ? iconImage : (button != null ? button.GetComponent<Image>() : null);
+        if (target != null)
         {
-            iconImage.sprite  = hasItem ? item.icon : null;
-            iconImage.enabled = hasItem && item.icon != null;
+            target.sprite = hasItem ? item.icon : null;
+            target.enabled = hasItem && item.icon != null;
+            // Ensure the button doesn't block raycasts when showing icon only
+            target.raycastTarget = false;
         }
     }
 

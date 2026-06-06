@@ -170,7 +170,7 @@ public class MapUIController : MonoBehaviour
         if (!Application.isPlaying)
             return;
 
-        if (Keyboard.current != null && Keyboard.current[KeyBindings.GetKey(GameAction.ToggleMap)]?.wasPressedThisFrame == true)
+        if (ActionInput.WasPressedThisFrame(GameAction.ToggleMap))
         {
             ToggleFullMap();
         }

@@ -220,11 +220,7 @@ public class ControlsPanel : MonoBehaviour
     {
         if (Application.isPlaying && IsPauseAllowed())
         {
-            bool pausePressed = Input.GetKeyDown(KeyCode.Escape);
-            if (Keyboard.current != null)
-            {
-                pausePressed |= Keyboard.current[KeyBindings.GetKey(GameAction.Pause)]?.wasPressedThisFrame == true;
-            }
+            bool pausePressed = Input.GetKeyDown(KeyCode.Escape) || ActionInput.WasPressedThisFrame(GameAction.Pause);
 
             if (pausePressed)
             {

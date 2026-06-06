@@ -96,9 +96,15 @@ public class GameOverUI : MonoBehaviour
             float duration = stats.GetGameDuration();
             int minutes = Mathf.FloorToInt(duration / 60f);
             int seconds = Mathf.FloorToInt(duration % 60f);
-            durationText.text = $"Duración: {minutes:00}:{seconds:00}";
+            if (durationText != null)
+                durationText.text = $"Duración: {minutes:00}:{seconds:00}";
+            else
+                Debug.LogWarning("GameOverUI: durationText is not assigned in inspector.");
 
-            enemiesKilledText.text = $"Enemigos Asesinados: {stats.GetEnemiesKilled()}";
+            if (enemiesKilledText != null)
+                enemiesKilledText.text = $"Enemigos Asesinados: {stats.GetEnemiesKilled()}";
+            else
+                Debug.LogWarning("GameOverUI: enemiesKilledText is not assigned in inspector.");
         }
 
         // Pause the game

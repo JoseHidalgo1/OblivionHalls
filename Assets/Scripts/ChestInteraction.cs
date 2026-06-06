@@ -217,16 +217,9 @@ public class ChestInteraction : MonoBehaviour
         }
 
             // Detectar tecla F
-            if (inRange)
+            if (inRange && ActionInput.WasPressedThisFrame(GameAction.Interact))
             {
-                if (Keyboard.current != null && Keyboard.current[interactionKey].wasPressedThisFrame)
-                {
-                    OpenChest();
-                }
-                else if (Keyboard.current == null && Input.GetKeyDown(KeyCode.F))
-                {
-                    OpenChest();
-                }
+                OpenChest();
             }
     }
 

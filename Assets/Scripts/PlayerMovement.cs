@@ -21,6 +21,8 @@ public class PlayerMovement : MonoBehaviour
     private FacingDirection facingDirection = FacingDirection.Front;
     private string currentAnimation;
     private PlayerFoodEnergy foodEnergy;
+    private float lastFacingChangeTime = 0f;
+    [SerializeField] private float facingChangeDebounce = 0.08f; // seconds
 
     private bool isAttacking;
     private bool isHurt;
@@ -118,10 +120,11 @@ public class PlayerMovement : MonoBehaviour
         movementInput = GetMovementInput();
         if (movementInput.sqrMagnitude > 0.0001f)
         {
+            Debug.Log($"[PlayerMovement] Movement: {movementInput}");
             UpdateFacingDirection(movementInput);
         }
 
-        if (!isAttacking && !isHurt && Keyboard.current != null && Keyboard.current[KeyBindings.GetKey(GameAction.Attack)].wasPressedThisFrame)
+        if (!isAttacking && !isHurt && ActionInput.WasPressedThisFrame(GameAction.Attack))
         {
             IniciarAtaque();
         }
@@ -137,15 +140,7 @@ public class PlayerMovement : MonoBehaviour
             return;
         }
 
-        bool shiftHeld = false;
-        if (Keyboard.current != null)
-        {
-            Key sprintKey = KeyBindings.GetKey(GameAction.Sprint);
-            if (Keyboard.current[sprintKey] != null)
-            {
-                shiftHeld = Keyboard.current[sprintKey].isPressed;
-            }
-        }
+        bool shiftHeld = ActionInput.GetAction(GameAction.Sprint);
 
         float effectiveSpeed = moveSpeed;
         if (foodEnergy != null)
@@ -163,29 +158,34 @@ public class PlayerMovement : MonoBehaviour
 
     private Vector2 GetMovementInput()
     {
-        if (Keyboard.current == null)
-        {
-            return Vector2.zero;
-        }
-
-        float horizontal = (Keyboard.current[KeyBindings.GetKey(GameAction.MoveRight)]?.isPressed == true ? 1f : 0f)
-                   - (Keyboard.current[KeyBindings.GetKey(GameAction.MoveLeft)]?.isPressed == true ? 1f : 0f);
-        float vertical = (Keyboard.current[KeyBindings.GetKey(GameAction.MoveUp)]?.isPressed == true ? 1f : 0f)
-                 - (Keyboard.current[KeyBindings.GetKey(GameAction.MoveDown)]?.isPressed == true ? 1f : 0f);
-
-        Vector2 input = new Vector2(horizontal, vertical);
-        return input.normalized;
+        Vector2 mov = ActionInput.GetMovement();
+        if (mov.sqrMagnitude > 0.0001f)
+            Debug.Log($"[PlayerMovement.GetMovementInput] Returning: {mov}");
+        return mov;
     }
 
     private void UpdateFacingDirection(Vector2 direction)
     {
+        // Determine the candidate direction based on the dominant axis
+        FacingDirection candidate;
         if (Mathf.Abs(direction.x) >= Mathf.Abs(direction.y))
         {
-            facingDirection = direction.x >= 0f ? FacingDirection.Right : FacingDirection.Left;
-            return;
+            candidate = direction.x >= 0f ? FacingDirection.Right : FacingDirection.Left;
+        }
+        else
+        {
+            candidate = direction.y >= 0f ? FacingDirection.Back : FacingDirection.Front;
         }
 
-        facingDirection = direction.y >= 0f ? FacingDirection.Back : FacingDirection.Front;
+        // Debounce small oscillations to avoid restarting animation rapidly
+        if (candidate != facingDirection)
+        {
+            if (Time.time - lastFacingChangeTime >= facingChangeDebounce)
+            {
+                facingDirection = candidate;
+                lastFacingChangeTime = Time.time;
+            }
+        }
     }
 
     private void UpdateAnimation()

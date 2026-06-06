@@ -353,7 +353,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 155308c1ec8c6c04a8e63bea55f93c04, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::LoadingScreenController
-  loadingVideoClip: {fileID: 32900000, guid: 41b9c0000cfe90d4a842fd0867f8ff07, type: 3}
+  loadingVideoClip: {fileID: 32900000, guid: 311be7226d2b12b479a10a9e3aab8d5e, type: 3}
   loadingAudioTrackName: Loading
   nextAudioTrackName: Main Menu
   targetSceneName: MainMenu

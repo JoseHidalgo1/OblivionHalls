@@ -92,6 +92,7 @@ public class LevelCompleteUI : MonoBehaviour
 
     public void ShowLevelComplete()
     {
+        Debug.Log($"LevelCompleteUI: ShowLevelComplete invoked. panelAssigned={(levelCompletePanel!=null)}");
         if (levelCompletePanel != null)
         {
             levelCompletePanel.SetActive(true);
@@ -110,10 +111,25 @@ public class LevelCompleteUI : MonoBehaviour
             float duration = stats.GetGameDuration();
             int minutes = Mathf.FloorToInt(duration / 60f);
             int seconds = Mathf.FloorToInt(duration % 60f);
-            durationText.text = $"Duración: {minutes:00}:{seconds:00}";
-            enemiesKilledText.text = $"Enemigos Asesinados: {stats.GetEnemiesKilled()}";
-            healsText.text = $"Curaciones realizadas: {stats.GetHealsPerformed()}";
-            generalRestartsText.text = $"Reinicios generales: {stats.GetGeneralRestartCount()}";
+            if (durationText != null)
+                durationText.text = $"Duración: {minutes:00}:{seconds:00}";
+            else
+                Debug.LogWarning("LevelCompleteUI: durationText is not assigned in inspector.");
+
+            if (enemiesKilledText != null)
+                enemiesKilledText.text = $"Enemigos Asesinados: {stats.GetEnemiesKilled()}";
+            else
+                Debug.LogWarning("LevelCompleteUI: enemiesKilledText is not assigned in inspector.");
+
+            if (healsText != null)
+                healsText.text = $"Curaciones realizadas: {stats.GetHealsPerformed()}";
+            else
+                Debug.LogWarning("LevelCompleteUI: healsText is not assigned in inspector.");
+
+            if (generalRestartsText != null)
+                generalRestartsText.text = $"Reinicios generales: {stats.GetGeneralRestartCount()}";
+            else
+                Debug.LogWarning("LevelCompleteUI: generalRestartsText is not assigned in inspector.");
         }
 
         Time.timeScale = 0f;

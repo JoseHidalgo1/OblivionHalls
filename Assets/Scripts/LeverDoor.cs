@@ -186,11 +186,7 @@ public class LeverDoor : MonoBehaviour
             return;
         }
 
-        if (Keyboard.current != null && Keyboard.current[KeyBindings.GetKey(GameAction.Interact)]?.wasPressedThisFrame == true)
-        {
-            ToggleLever();
-        }
-        else if (Keyboard.current == null && Input.GetKeyDown(KeyCode.F))
+        if (ActionInput.WasPressedThisFrame(GameAction.Interact))
         {
             ToggleLever();
         }
